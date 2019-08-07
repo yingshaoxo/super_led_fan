@@ -287,12 +287,17 @@ void initialize_serial_communication() {
     _BIS_SR(GIE); // just enable general interrupt
 }
 
-unsigned int STATE_YOU_WANT_TO_SEND;
+unsigned int STATE_YOU_WANT_TO_SEND = 0;
 void send_state_to_serial(int state) {
     STATE_YOU_WANT_TO_SEND = state;
 }
 
-unsigned int STATE_FROM_SERIAL;
+unsigned int STATE_FROM_SERIAL = 0;
+unsigned int TASK_NUMBER = 0;
+unsigned int data_arraving = 0;
+unsigned int data_index = 0;
+unsigned int an_picture[256];
+unsigned int an_image_received = 0;
 #pragma vector = USART0RX_VECTOR
 __interrupt void usart0_rx(void) {
     while (!(IFG1 & UTXIFG0)) {
@@ -300,6 +305,26 @@ __interrupt void usart0_rx(void) {
     }
     STATE_FROM_SERIAL = (int)RXBUF0;                // receive state
     TXBUF0 = (unsigned char)STATE_YOU_WANT_TO_SEND; // send state
+
+    if (STATE_FROM_SERIAL != 0 || data_arraving == 1) {
+        if (data_arraving == 0) {
+            TASK_NUMBER = STATE_FROM_SERIAL;
+            if (TASK_NUMBER == 8) {
+                data_arraving = 1;
+                an_image_received = 0;
+            }
+        } else {
+            if (data_index > 256) {
+                data_arraving = 0;
+                data_index = 0;
+                an_image_received = 1;
+            }
+            an_picture[data_index] = STATE_FROM_SERIAL;
+            data_index += 1;
+        }
+    } else {
+        TASK_NUMBER = 0;
+    }
 }
 
 int main(void) {
@@ -309,9 +334,13 @@ int main(void) {
     initialize_serial_communication();
 
     while (1) {
-        print_number(0, 1, STATE_FROM_SERIAL);
-
-        send_state_to_serial(STATE_FROM_SERIAL);
+        print_number(0, 1, TASK_NUMBER);
+        if (an_image_received == 1) {
+            print_number(0, 2, an_image_received);
+            millisecond_of_delay(500);
+        } else {
+            print_number(0, 2, an_image_received);
+        }
     }
 
     return 0;
