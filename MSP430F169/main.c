@@ -216,50 +216,62 @@ void print_float(int x, int y, float number) {
 }
 
 void screen_clean() {
-    write_command(0x01); //simplest way to do it
+    write_command(0x01);
 }
 
 void force_screen_clean() {
-    unsigned char i, j;
-    write_command(0x34);     //开启拓展指令集
-    for (i = 0; i < 32; i++) //因为LCD有纵坐标32格所以写三十二次
+    unsigned char i, j, k;
+
+    write_command(0x34); //打开扩展指令集，绘图显示关
+    write_command(0x36); //打开扩展指令集，绘图显示开
+
+    for (i = 0; i < 2; i++) //分上下两屏写
     {
-        write_command(0x80 + i); //先写入纵坐标Y的值
-        write_command(0x80);     //再写入横坐标X的值
-        for (j = 0; j < 32; j++) //横坐标有16位，每位写入两个字节的的数据，也
-        {                        //就写入32次以为当写入两个字节之后横坐标会自
-            write_data(0xFF);    //动加1，所以就不用再次写入地址了。
+        for (j = 0; j < 32; j++) {
+            write_command(0x80 + j); //写Y 坐标
+            millisecond_of_delay(1);
+            if (i == 0) //写X 坐标
+            {
+                write_command(0x80);
+                millisecond_of_delay(1);
+            } else //写下半屏
+            {
+                write_command(0x88);
+                millisecond_of_delay(1);
+            }
+
+            for (k = 0; k < 16; k++) { //写一整行数据
+                write_data(0x00);
+                millisecond_of_delay(1);
+            }
         }
     }
-    write_command(0x36); //0x36扩展指令里面打开绘图显示
-    write_command(0x30); //恢复基本指令集
+
+    write_command(0x30); //关闭扩展指令集
 }
 
-void draw_picture(unsigned char *a) {
-    unsigned char i, j;
-
+void draw_graph(const unsigned char *graphic) {
     force_screen_clean();
-    write_command(0x34);     //开启扩展指令集，并关闭画图显示。
+    write_command(0x34); //开启扩展指令集，并关闭画图显示。
 
-    for (i = 0; i < 32; i++) //因为LCD有纵坐标32格所以写三十二次
-    {
-        write_command(0x80 + i); //先写入纵坐标Y的值
-        write_command(0x88);     //再写入横坐标X的值
-        for (j = 0; j < 16; j++) //横坐标有16位，每位写入两个字节的的数据，也
-        {                        //就写入32次以为当写入两个字节之后横坐标会自
-            write_data(*a);      //动加1，所以就不用再次写入地址了。
-            a++;
-        }
-    }
-
-    for (i = 0; i < 32; i++) //因为LCD有纵坐标32格所以写三十二次
-    {
-        write_command(0x80 + i); //先写入纵坐标Y的值
-        write_command(0x88);     //再写入横坐标X的值
-        for (j = 0; j < 16; j++) //横坐标有16位，每位写入两个字节的的数据，也
-        {                        //就写入32次以为当写入两个字节之后横坐标会自
-            write_data(*a);      //动加1，所以就不用再次写入地址了。
-            a++;
+    unsigned char x, y;
+    for (y = 0; y < 64; y++) {
+        if (y < 32) {
+            for (x = 0; x < 8; x++)                      // Draws top half of the screen.
+            {                                            // In extended instruction mode, vertical and horizontal coordinates must be specified before sending data in.
+                write_command(0x80 | y);                 // Vertical coordinate of the screen is specified first. (0-31)
+                write_command(0x80 | x);                 // Then horizontal coordinate of the screen is specified. (0-8)
+                write_data(graphic[2 * x + 16 * y]);     // Data to the upper byte is sent to the coordinate.
+                write_data(graphic[2 * x + 1 + 16 * y]); // Data to the lower byte is sent to the coordinate.
+            }
+        } else {
+            for (x = 0; x < 8; x++)             // Draws bottom half of the screen.
+            {                                   // Actions performed as same as the upper half screen.
+                write_command(0x80 | (y - 32)); // Vertical coordinate must be scaled back to 0-31 as it is dealing with another half of the screen.
+                write_command(0x88 | x);
+                write_data(graphic[2 * x + 16 * y]);
+                write_data(graphic[2 * x + 1 + 16 * y]);
+            }
         }
     }
 
@@ -298,16 +310,6 @@ void initialize_LCD() {
 // ****************
 
 void initialize_serial_communication() {
-    /* for 9500 baud */
-    //P3SEL |= 0x30;        // P3.4,5 = USART0 TXD/RXD
-    //ME1 |= UTXE0 + URXE0; // Enable USART0 TXD/RXD
-    //UCTL0 |= CHAR;        // 8-bit character
-    //UTCTL0 |= SSEL0;      // UCLK = ACLK
-    //UBR00 = 0x03;         // 32k/9600 - 3.41
-    //UBR10 = 0x00;         //
-    //UMCTL0 = 0x4A;        // Modulation
-    //UCTL0 &= ~SWRST;      // Initialize USART state machine
-
     /* for 115200 baud */
     volatile unsigned int i;
     WDTCTL = WDTPW + WDTHOLD; // Stop WDT
@@ -345,6 +347,24 @@ unsigned int TASK_NUMBER = 0;
 unsigned int data_arraving = 0;
 unsigned int data_index = 0;
 unsigned int an_picture[256];
+//unsigned int an_picture[256] = {
+//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+//    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+//    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+//};
 unsigned int an_image_received = 0;
 #pragma vector = USART0RX_VECTOR
 __interrupt void usart0_rx(void) {
@@ -367,7 +387,11 @@ __interrupt void usart0_rx(void) {
                 data_index = 0;
                 an_image_received = 1;
             }
-            an_picture[data_index] = STATE_FROM_SERIAL;
+            if (STATE_FROM_SERIAL == 10) {
+                an_picture[data_index] = 0;
+            } else {
+                an_picture[data_index] = 1;
+            }
             data_index += 1;
         }
     } else {
@@ -375,22 +399,65 @@ __interrupt void usart0_rx(void) {
     }
 }
 
-void show_picture() {
-    unsigned char picture[16][16];
-    int y;
-    int x;
+void draw_picture_from_serial() {
+    // convert 16x16 points to 8x16
+    unsigned char new_data[128];
+    int new_data_index = 0;
 
-    for(y=0; y<16; y++) {
-        for(x=0; x<16; x++) {
-            if (an_picture[y*16 + x] == 11) {
-                picture[y][x] = 0xff;
-            } else {
-                picture[y][x] = 0x00;
+    unsigned char y, x;
+    for (y = 0; y < 16; y++) {
+        for (x = 0; x < 16; x++) {
+            if (x % 2 != 0) { // only work for odd index, for example, 1,3,5,7
+                int first, second;
+                first = an_picture[(y * 16) + x];
+                second = an_picture[((y * 16) + x) - 1];
+                if ((first == 0) && (second == 1)) {
+                    new_data[new_data_index] = 0x0f;
+                } else if ((first == 1) && (second == 0)) {
+                    new_data[new_data_index] = 0xf0;
+                } else if ((first == 1) && (second == 1)) {
+                    new_data[new_data_index] = 0xff;
+                } else if ((first == 0) && (second == 0)) {
+                    new_data[new_data_index] = 0x00;
+                }
+                new_data_index++;
             }
         }
     }
 
-    draw_picture(&picture[0]);
+    // start drawing
+    force_screen_clean();
+    write_command(0x34); //开启扩展指令集，并关闭画图显示。
+    write_command(0x36); //开显示
+
+    unsigned char i, ii, iii;
+    for (i = 0; i < 16; i++) {
+        if (i < 8) {
+            for (ii = 0; ii < 4; ii++) {
+                write_command(0x80 + ii + 4 * i);
+                write_command(0x80);
+                for (iii = 0; iii < 8; iii++) {
+                    write_data(new_data[i * 8 + iii]);
+                }
+                for (iii = 0; iii < 8; iii++) {
+                    write_data(0x00);
+                }
+            }
+        } else {
+            for (ii = 0; ii < 4; ii++) {
+                write_command(0x80 + ii + 4 * i - 32);
+                write_command(0x88);
+                for (iii = 0; iii < 8; iii++) {
+                    write_data(new_data[i * 8 + iii]);
+                }
+                for (iii = 0; iii < 8; iii++) {
+                    write_data(0x00);
+                }
+            }
+        }
+    }
+
+    write_command(0x30); //转回基本指令集
 }
 
 int main(void) {
@@ -409,7 +476,10 @@ int main(void) {
         //}
 
         if (an_image_received == 1) {
-            show_picture();
+            draw_picture_from_serial();
+
+            millisecond_of_delay(5000);
+            an_image_received = 0;
         }
     }
 
