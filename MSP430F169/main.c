@@ -32,7 +32,7 @@
 void millisecond_of_delay(unsigned int t) {
     while (t--) {
         // delay for 1ms
-        __delay_cycles(1000);
+        __delay_cycles(10000);
     }
 }
 
@@ -344,10 +344,11 @@ void send_state_to_serial(int state) {
 
 unsigned int STATE_FROM_SERIAL = 0;
 unsigned int TASK_NUMBER = 0;
+
 unsigned int data_arraving = 0;
 unsigned int data_index = 0;
-unsigned int an_picture[256];
-//unsigned int an_picture[256] = {
+
+//unsigned int an_image[256] = {
 //    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 //    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 //    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -365,34 +366,71 @@ unsigned int an_picture[256];
 //    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 //    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 //};
+unsigned int an_image[257];
+unsigned int image_index = 0;
 unsigned int an_image_received = 0;
+
 #pragma vector = USART0RX_VECTOR
 __interrupt void usart0_rx(void) {
     while (!(IFG1 & UTXIFG0)) {
         // USART0 TX buffer ready?
     }
     STATE_FROM_SERIAL = (int)RXBUF0;                // receive state
-    TXBUF0 = (unsigned char)STATE_YOU_WANT_TO_SEND; // send state
+    //TXBUF0 = (unsigned char)STATE_YOU_WANT_TO_SEND; // send state
+
+    //if (STATE_FROM_SERIAL != 0 || data_arraving == 1) {
+    //    if (data_arraving == 0) {
+    //        TASK_NUMBER = STATE_FROM_SERIAL;
+    //        if (TASK_NUMBER == 8) {
+    //            data_arraving = 1;
+    //            an_image_received = 0;
+    //        }
+    //    } else {
+    //        if (data_index > 257) {
+    //            data_arraving = 0;
+    //            data_index = 0;
+    //            an_image_received = 1;
+    //        }
+    //        if (STATE_FROM_SERIAL == 9) {
+    //            an_image[data_index] = 0;
+    //        } else {
+    //            an_image[data_index] = 1;
+    //        }
+    //        data_index += 1;
+    //    }
+    //} else {
+    //    TASK_NUMBER = 0;
+    //}
 
     if (STATE_FROM_SERIAL != 0 || data_arraving == 1) {
         if (data_arraving == 0) {
             TASK_NUMBER = STATE_FROM_SERIAL;
             if (TASK_NUMBER == 8) {
-                data_arraving = 1;
                 an_image_received = 0;
             }
+            data_arraving = 1;
         } else {
+            if (TASK_NUMBER == 8) {
+                if (data_index < 256) {
+                    if (STATE_FROM_SERIAL == 9) {
+                        an_image[data_index] = 1;
+                    } else {
+                        an_image[data_index] = 0;
+                    }
+                } else { // data_index == 256, actually the 257 element
+                    image_index = STATE_FROM_SERIAL;
+                }
+            }
+
+            data_index += 1;
+
             if (data_index > 256) {
                 data_arraving = 0;
                 data_index = 0;
-                an_image_received = 1;
+                if (TASK_NUMBER == 8) {
+                    an_image_received = 1;
+                }
             }
-            if (STATE_FROM_SERIAL == 10) {
-                an_picture[data_index] = 0;
-            } else {
-                an_picture[data_index] = 1;
-            }
-            data_index += 1;
         }
     } else {
         TASK_NUMBER = 0;
@@ -409,8 +447,8 @@ void draw_picture_from_serial() {
         for (x = 0; x < 16; x++) {
             if (x % 2 != 0) { // only work for odd index, for example, 1,3,5,7
                 int first, second;
-                first = an_picture[(y * 16) + x];
-                second = an_picture[((y * 16) + x) - 1];
+                first = an_image[(y * 16) + x];
+                second = an_image[((y * 16) + x) - 1];
                 if ((first == 0) && (second == 1)) {
                     new_data[new_data_index] = 0x0f;
                 } else if ((first == 1) && (second == 0)) {
@@ -466,19 +504,25 @@ int main(void) {
     initialize_LCD();
     initialize_serial_communication();
 
+    int i = 0;
     while (1) {
         //print_number(0, 1, TASK_NUMBER);
-        //if (an_image_received == 1) {
-        //    print_number(0, 2, an_image_received);
-        //    millisecond_of_delay(500);
-        //} else {
-        //    print_number(0, 2, an_image_received);
+        //print_number(0, 2, an_image_received);
+        //print_number(0, 3, image_index);
+        //print_number(0, 4, STATE_FROM_SERIAL);
+        ////print_number(0, 4, i);
+        //millisecond_of_delay(500);
+        //screen_clean();
+
+        //i++;
+        //if (i > 50) {
+        //    i = 0;
         //}
 
         if (an_image_received == 1) {
             draw_picture_from_serial();
 
-            millisecond_of_delay(5000);
+            //millisecond_of_delay(100);
             an_image_received = 0;
         }
     }
