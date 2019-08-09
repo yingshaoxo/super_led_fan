@@ -32,7 +32,7 @@
 void millisecond_of_delay(unsigned int t) {
     while (t--) {
         // delay for 1ms
-        __delay_cycles(10000);
+        __delay_cycles(1000);
     }
 }
 
@@ -297,6 +297,71 @@ void initialize_LCD() {
 
 // ***************
 // ****************
+//
+// Handle keypad value !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//
+// ***************
+// ****************
+
+/* 
+1	2	3	Return(or back)
+4	5	6	Menu
+7	8	9	Cancel
+    0	.	Enter
+
+.: 10
+
+Return: 11
+Menu: 12
+Cancel: 13
+Enter: 14
+
+Return: -1
+Menu: -2
+Cancel: -3
+Enter: -4
+*/
+
+int human_set_target_number = 0;
+int input_start = 0;
+char input_string[50];
+void handle_keypad_key(int number) {
+    if (input_start == 0) {
+        screen_clean();
+        millisecond_of_delay(10);
+        if ((number >= 0) && (number < 10)) {
+            char text[1];
+            int_to_string(number, text, 1);
+            strcat(input_string, text);
+            print_string(0, 1, input_string);
+
+            input_start = 1;
+        }
+    } else if (input_start == 1) {
+        if ((number >= 0) && (number < 10)) {
+            char text[1];
+            int_to_string(number, text, 1);
+            strcat(input_string, text);
+            print_string(0, 1, input_string);
+        } else if (number > 0) {
+            if (number == 13) {
+                print_string(0, 1, "Which Task?");
+                strcpy(input_string, "");
+                input_start = 0;
+            } else if (number == 14) {
+                int target_number = atoi(input_string);
+                human_set_target_number = target_number;
+
+                print_string(0, 1, "Which Task?");
+                strcpy(input_string, "");
+                input_start = 0;
+            }
+        }
+    }
+}
+
+// ***************
+// ****************
 // SET Serial Communication!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //
 // TX(transmit): P3.4
@@ -348,59 +413,21 @@ unsigned int TASK_NUMBER = 0;
 unsigned int data_arraving = 0;
 unsigned int data_index = 0;
 
-//unsigned int an_image[256] = {
-//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-//    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-//    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-//    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-//};
 unsigned int an_image[257];
 unsigned int image_index = 0;
 unsigned int an_image_received = 0;
+
+unsigned int KeyPad_value = 15; // 15 was not exist
+unsigned int old_KeyPad_state = 0;
+unsigned int new_KeyPad_state = 0;
 
 #pragma vector = USART0RX_VECTOR
 __interrupt void usart0_rx(void) {
     while (!(IFG1 & UTXIFG0)) {
         // USART0 TX buffer ready?
     }
-    STATE_FROM_SERIAL = (int)RXBUF0;                // receive state
+    STATE_FROM_SERIAL = (int)RXBUF0; // receive state
     //TXBUF0 = (unsigned char)STATE_YOU_WANT_TO_SEND; // send state
-
-    //if (STATE_FROM_SERIAL != 0 || data_arraving == 1) {
-    //    if (data_arraving == 0) {
-    //        TASK_NUMBER = STATE_FROM_SERIAL;
-    //        if (TASK_NUMBER == 8) {
-    //            data_arraving = 1;
-    //            an_image_received = 0;
-    //        }
-    //    } else {
-    //        if (data_index > 257) {
-    //            data_arraving = 0;
-    //            data_index = 0;
-    //            an_image_received = 1;
-    //        }
-    //        if (STATE_FROM_SERIAL == 9) {
-    //            an_image[data_index] = 0;
-    //        } else {
-    //            an_image[data_index] = 1;
-    //        }
-    //        data_index += 1;
-    //    }
-    //} else {
-    //    TASK_NUMBER = 0;
-    //}
 
     if (STATE_FROM_SERIAL != 0 || data_arraving == 1) {
         if (data_arraving == 0) {
@@ -409,9 +436,10 @@ __interrupt void usart0_rx(void) {
                 an_image_received = 0;
             }
             data_arraving = 1;
+
         } else {
-            if (TASK_NUMBER == 8) {
-                if (data_index < 256) {
+            if (TASK_NUMBER == 8) {     // handle image data
+                if (data_index < 256) { // data_index = 255, actually the 256 element
                     if (STATE_FROM_SERIAL == 9) {
                         an_image[data_index] = 1;
                     } else {
@@ -421,14 +449,29 @@ __interrupt void usart0_rx(void) {
                     image_index = STATE_FROM_SERIAL;
                 }
             }
+            if (TASK_NUMBER == 11) { // handle keypad data
+                if (data_index == 0) {
+                    KeyPad_value = STATE_FROM_SERIAL;
+                }
+                if (data_index == 1) {
+                    new_KeyPad_state = STATE_FROM_SERIAL;
+                }
+            }
 
             data_index += 1;
 
             if (data_index > 256) {
                 data_arraving = 0;
                 data_index = 0;
-                if (TASK_NUMBER == 8) {
+                if (TASK_NUMBER == 8) { // handle image data after data transmission finished
                     an_image_received = 1;
+                }
+                if (TASK_NUMBER == 11) { // handle keypad data after data transmission finished
+                    if (old_KeyPad_state != new_KeyPad_state) {
+                        // do something
+                        handle_keypad_key(KeyPad_value);
+                    }
+                    old_KeyPad_state = new_KeyPad_state;
                 }
             }
         }
@@ -436,6 +479,14 @@ __interrupt void usart0_rx(void) {
         TASK_NUMBER = 0;
     }
 }
+
+// ***************
+// ****************
+//
+// Display imgage at LCD!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//
+// ***************
+// ****************
 
 void draw_picture_from_serial() {
     // convert 16x16 points to 8x16
@@ -498,13 +549,135 @@ void draw_picture_from_serial() {
     write_command(0x30); //转回基本指令集
 }
 
+// ***************
+// ****************
+// SET Pin interrupt for getting base time T !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//
+// infrared sensor pin: P1.3
+//
+// ***************
+// ****************
+
+#define echo_pin BIT3
+
+void initialize_infrared_sensor() {
+    P1DIR &= ~echo_pin; // set P1.3 as input
+
+    TB0CCTL0 |= CCIE;         // Timer B Capture/Compare Control 0; CCR0 interrupt enabled
+    TB0CCR0 = 50000;          // start to increase TBR microseconds
+    TB0CTL = TBSSEL_2 + MC_1; // Timer B Control; SMCLK, UP mode
+
+    P1IFG &= ~echo_pin; // interrupt flag: set to 0 to indicate No interrupt is pending
+    P1IE |= echo_pin;   // interrupt enable: enable interrupt on pin1.3
+    P1IES |= echo_pin;  // set P1 echo_pin to falling edge interrupt: P1IES = 1
+
+    //_BIS_SR(GIE); // global interrupt enable
+    __enable_interrupt(); // you must enable all interrupt for thie code to work
+}
+
+unsigned long int temporary_accumulated_T;
+unsigned long int infrared_detection_counting = 0;
+unsigned long int the_average_T = 0;                         //T
+unsigned long int the_time_during_one_part_of_240_parts = 0; //T1
+#pragma vector = PORT1_VECTOR
+__interrupt void Port_1(void) {
+    if (P1IFG & echo_pin) // is that interrupt request come from echo_pin? is there an rising or falling edge has been detected? Each PxIFGx bit is the interrupt flag for its corresponding I/O pin and is set when the selected input signal edge occurs at the pin.
+    {
+        if (P1IES & echo_pin) // is this the falling edge? (P1IES & echo_pin) == 1
+        {
+            if (infrared_detection_counting > 9) {
+                temporary_accumulated_T += TB0R; // TBR is a us time unit at this case; may have error if change happens too fast; use array is a sulution
+            }
+            infrared_detection_counting++;
+            if (infrared_detection_counting >= 19) {
+                the_average_T = temporary_accumulated_T / 10;
+                the_time_during_one_part_of_240_parts = the_average_T / 240;
+                infrared_detection_counting == 0;
+            }
+            TB0CCR0 = 50000; // start to increase TBR microseconds
+        }
+        P1IFG &= ~echo_pin; // clear flag, so it can start to detect new rising or falling edge, then a new call to this interrupt function will be allowed.
+    }
+}
+
+#pragma vector = TIMER0_B0_VECTOR
+__interrupt void Timer_B(void) {
+    // don't know why this have to be exist, but without it, TBR won't work
+}
+
+// ***************
+// ****************
+// Control the LEDs !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//
+// data: P5.0-P5.7
+// enable: P6.0-P6.3
+//
+// ***************
+// ****************
+
+#define enable_led_chip_1 P6OUT |= BIT0
+#define disable_led_chip_1 P6OUT &= ~BIT0
+
+#define enable_led_chip_2 P6OUT |= BIT1
+#define disable_led_chip_2 P6OUT &= ~BIT1
+
+#define enable_led_chip_3 P6OUT |= BIT2
+#define disable_led_chip_3 P6OUT &= ~BIT2
+
+#define enable_led_chip_4 P6OUT |= BIT3
+#define disable_led_chip_4 P6OUT &= ~BIT3
+
+void initialize_16_rows_LED() {
+    P5DIR |= (BIT0 | BIT1 | BIT2 | BIT3 | BIT4 | BIT5 | BIT6 | BIT7); // set Port 5 as output
+    P6DIR |= (BIT0 | BIT1 | BIT2 | BIT3);                             // set P6.0-P6.3 as output
+
+    P5OUT &= ~(BIT0 | BIT1 | BIT2 | BIT3 | BIT4 | BIT5 | BIT6 | BIT7); // set Port 5 to low
+    P6OUT &= ~(BIT0 | BIT1 | BIT2 | BIT3);                             // set P6.0-P6.3 to low
+}
+
+void set_first_8_red_leds(unsigned char byte_data) {
+    enable_led_chip_1;
+    P5OUT = byte_data;
+}
+
+void set_first_8_green_leds(unsigned char byte_data) {
+    enable_led_chip_2;
+    P5OUT = byte_data;
+}
+
+void set_last_8_red_leds(unsigned char byte_data) {
+    enable_led_chip_3;
+    P5OUT = byte_data;
+}
+
+void set_last_8_green_leds(unsigned char byte_data) {
+    enable_led_chip_4;
+    P5OUT = byte_data;
+}
+
+void turn_off_all_leds() {
+    P5OUT = 0x00;
+    disable_led_chip_1;
+    disable_led_chip_2;
+    disable_led_chip_3;
+    disable_led_chip_4;
+}
+
+// ****************
+
+// Task 1
+
+// ****************
+
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD; // stop watchdog timer
 
     initialize_LCD();
     initialize_serial_communication();
+    initialize_infrared_sensor();
 
-    int i = 0;
+    print_string(0, 1, "Which Task?");
+    //int i = 0;
     while (1) {
         //print_number(0, 1, TASK_NUMBER);
         //print_number(0, 2, an_image_received);
@@ -519,12 +692,11 @@ int main(void) {
         //    i = 0;
         //}
 
-        if (an_image_received == 1) {
-            draw_picture_from_serial();
+        //if (an_image_received == 1) {
+        //    draw_picture_from_serial();
 
-            //millisecond_of_delay(100);
-            an_image_received = 0;
-        }
+        //    an_image_received = 0;
+        //}
     }
 
     return 0;

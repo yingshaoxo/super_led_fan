@@ -172,10 +172,10 @@ def receive_int():
 0: idle
 
 1-7: different tasks
-    1. show two horizontal line at specific position. (two lines in one row? OR each line take a row?)
+    1. show two horizontal line at specific position. (each line take a row?)
     2. two lines move between center and top or bottom
     3. show two 16x16 picture, and the middle of the two picture have to be 4x4
-    4. show two 16x16 picture, picture getting wider or narrower. (the totall change > than 2 point? OR each point change > than 2 point?)
+    4. show two 16x16 picture, picture getting wider or narrower. (the totall change > than 2 point)
 
     5. record 3 pictures in 5 minites, and replay it with LCD
     6. send the 3 pictures to LED fans, one by one display at 120 degress of LED fans. the distance between each picture is 3x3 points
@@ -185,6 +185,8 @@ def receive_int():
     9: white point in picture
     10: black point in picture
     > the last element of 257 array was used for point out the picture index, for example, 1,2,3
+
+11: send keypad value
 
 Every signal start by `0`, then `signal`, then follow by 257 data.
 """
@@ -202,7 +204,7 @@ def send_signal(task_number, data=None, picture_index=1):
     for index in range(256): # send 1-256 elements
         if ((data != None) and (index < data_length)):
             send_int(data[index])
-            print(data[index])
+            #print(data[index])
         else:
             send_idle_state()
     send_int(picture_index) # send 257
@@ -231,6 +233,8 @@ class Keypad():
     pin5 = Pin('P7', Pin.OUT_PP)
     pin6 = Pin('P8', Pin.OUT_PP)
     pin7 = Pin('P9', Pin.OUT_PP)
+
+    state = 0
 
     def set_column1_to_0(self):
         self.pin4.value(0)
@@ -304,7 +308,7 @@ class Keypad():
             if (self.input_of_row1()):
                 self.millisecond_of_delay(400)
                 if (self.input_of_row1()):
-                    self.handle_keypad_number(-4)
+                    self.handle_keypad_number(14)
                     self.set_column4_to_0()
                     return 0  # must return, otherwise, a weird thing will happen
             self.set_column4_to_0()
@@ -341,7 +345,7 @@ class Keypad():
             if (self.input_of_row2()):
                 self.millisecond_of_delay(400)
                 if (self.input_of_row2()):
-                    self.handle_keypad_number(-3)
+                    self.handle_keypad_number(13)
                     self.set_column4_to_0()
                     return 0  # must return, otherwise, a weird thing will happen
             self.set_column4_to_0()
@@ -378,7 +382,7 @@ class Keypad():
             if (self.input_of_row3()):
                 self.millisecond_of_delay(400)
                 if (self.input_of_row3()):
-                    self.handle_keypad_number(-2)
+                    self.handle_keypad_number(12)
                     self.set_column4_to_0()
                     return 0  # must return, otherwise, a weird thing will happen
             self.set_column4_to_0()
@@ -415,13 +419,37 @@ class Keypad():
             if (self.input_of_row4()):
                 self.millisecond_of_delay(400)
                 if (self.input_of_row4()):
-                    self.handle_keypad_number(-1)
+                    self.handle_keypad_number(11)
                     self.set_column4_to_0()
                     return 0  # must return, otherwise, a weird thing will happen
             self.set_column4_to_0()
 
     def handle_keypad_number(self, number):
+        """
+        1	2	3	Return(or back)
+        4	5	6	Menu
+        7	8	9	Cancel
+            0	.	Enter
+
+        .: 10
+
+        Return: 11
+        Menu: 12
+        Cancel: 13
+        Enter: 14
+
+        Return: -1
+        Menu: -2
+        Cancel: -3
+        Enter: -4
+        """
         print(number)
+
+        send_signal(11, data=[number, self.state])
+
+        self.state += 1
+        if self.state > 255:
+            self.state = 0
 
 
 keypad = Keypad()
