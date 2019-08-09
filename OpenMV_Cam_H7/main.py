@@ -5,6 +5,7 @@ import sensor
 import binascii
 from pyb import UART
 from pyb import Pin
+from pyb import LED
 from utime import sleep_ms
 
 
@@ -19,6 +20,7 @@ sensor.skip_frames(time=2000)
 sensor.set_auto_gain(False)  # must be turned off for color tracking
 sensor.set_auto_whitebal(False)  # must be turned off for color tracking
 clock = time.clock()
+led = LED(3)
 
 
 ####################################
@@ -441,6 +443,8 @@ class Keypad():
         Cancel: 13
         Enter: 14
         """
+        led.on()
+
         print(number)
 
         #if (self.input_start == 0):
@@ -463,6 +467,10 @@ class Keypad():
 
         # send keypad value to remote
         send_signal(11, data=[number, self.state])
+
+        sleep_ms(150)
+        led.off()
+
         self.state += 1
         if self.state > 255:
             self.state = 0

@@ -297,125 +297,6 @@ void initialize_LCD() {
 
 // ***************
 // ****************
-//
-// Handle keypad value !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//
-// ***************
-// ****************
-
-/* 
-1	2	3	Return(or back)
-4	5	6	Menu
-7	8	9	Cancel
-    0	.	Enter
-
-.: 10
-Return: 11
-Menu: 12
-Cancel: 13
-Enter: 14
-*/
-
-char input_string[50];
-
-int start_to_set_task = 0;
-int task_number_from_keypad = 0;
-
-int start_to_set_row1 = 0;
-int start_to_set_row2 = 0;
-int row1_for_task1 = 0;
-int row2_for_task1 = 0;
-void handle_keypad_key(int number) {
-    if (start_to_set_row1 == 1) {
-        if ((number >= 0) && (number < 10)) {
-            char text[1];
-            int_to_string(number, text, 1);
-            strcat(input_string, text);
-            print_string(0, 1, input_string);
-        } else if (number > 10) {
-            if (number == 13) {
-                print_string(0, 1, "Row1(0-15)?");
-                strcpy(input_string, "");
-            } else if (number == 14) {
-                int target_number = atoi(input_string);
-                row1_for_task1 = target_number;
-                start_to_set_row1 = 0;
-                start_to_set_row2 = 1;
-
-                print_string(0, 1, "Row2(0-15)?");
-                strcpy(input_string, "");
-            }
-        }
-        return;
-    }
-
-    if (start_to_set_row2 == 1) {
-        if ((number >= 0) && (number < 10)) {
-            char text[1];
-            int_to_string(number, text, 1);
-            strcat(input_string, text);
-            print_string(0, 1, input_string);
-        } else if (number > 10) {
-            if (number == 13) {
-                print_string(0, 1, "Row2(0-15)?");
-                strcpy(input_string, "");
-            } else if (number == 14) {
-                int target_number = atoi(input_string);
-                row2_for_task1 = target_number;
-                start_to_set_row1 = 0;
-                start_to_set_row2 = 0;
-
-                print_string(0, 1, "Which Task?");
-                strcpy(input_string, "");
-            }
-        }
-        return;
-    }
-
-    if (start_to_set_task == 0) {
-        screen_clean();
-        millisecond_of_delay(10);
-        if ((number >= 0) && (number < 10)) {
-            char text[1];
-            int_to_string(number, text, 1);
-            strcat(input_string, text);
-            print_string(0, 1, input_string);
-
-            start_to_set_task = 1;
-        }
-    } else if (start_to_set_task == 1) {
-        if ((number >= 0) && (number < 10)) {
-            print_string(0, 1, "Which Task?");
-            strcpy(input_string, "");
-            start_to_set_task = 0;
-        } else if (number > 10) {
-            if (number == 13) {
-                print_string(0, 1, "Which Task?");
-                strcpy(input_string, "");
-                start_to_set_task = 0;
-
-            } else if (number == 14) {
-                int target_number = atoi(input_string);
-                if (target_number != 1) {
-                    task_number_from_keypad = target_number;
-
-                    print_string(0, 1, "Which Task?");
-                    strcpy(input_string, "");
-                    start_to_set_task = 0;
-                } else {
-                    task_number_from_keypad = target_number;
-                    start_to_set_row1 = 1;
-
-                    print_string(0, 1, "Row1(0-15)?");
-                    strcpy(input_string, "");
-                }
-            }
-        }
-    }
-}
-
-// ***************
-// ****************
 // SET Serial Communication!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //
 // TX(transmit): P3.4
@@ -474,65 +355,6 @@ unsigned int an_image_received = 0;
 unsigned int KeyPad_value = 15; // 15 was not exist
 unsigned int old_KeyPad_state = 0;
 unsigned int new_KeyPad_state = 0;
-
-#pragma vector = USART0RX_VECTOR
-__interrupt void usart0_rx(void) {
-    while (!(IFG1 & UTXIFG0)) {
-        // USART0 TX buffer ready?
-    }
-    STATE_FROM_SERIAL = (int)RXBUF0; // receive state
-    //TXBUF0 = (unsigned char)STATE_YOU_WANT_TO_SEND; // send state
-
-    if (STATE_FROM_SERIAL != 0 || data_arraving == 1) {
-        if (data_arraving == 0) {
-            TASK_NUMBER = STATE_FROM_SERIAL;
-            if (TASK_NUMBER == 8) {
-                an_image_received = 0;
-            }
-            data_arraving = 1;
-
-        } else {
-            if (TASK_NUMBER == 8) {     // handle image data
-                if (data_index < 256) { // data_index = 255, actually the 256 element
-                    if (STATE_FROM_SERIAL == 9) {
-                        an_image[data_index] = 1;
-                    } else {
-                        an_image[data_index] = 0;
-                    }
-                } else { // data_index == 256, actually the 257 element
-                    image_index = STATE_FROM_SERIAL;
-                }
-            }
-            if (TASK_NUMBER == 11) { // handle keypad data
-                if (data_index == 0) {
-                    KeyPad_value = STATE_FROM_SERIAL;
-                }
-                if (data_index == 1) {
-                    new_KeyPad_state = STATE_FROM_SERIAL;
-                }
-            }
-
-            data_index += 1;
-
-            if (data_index > 256) {
-                data_arraving = 0;
-                data_index = 0;
-                if (TASK_NUMBER == 8) { // handle image data after data transmission finished
-                    an_image_received = 1;
-                }
-                if (TASK_NUMBER == 11) { // handle keypad data after data transmission finished
-                    if (old_KeyPad_state != new_KeyPad_state) {
-                        // do something
-                        handle_keypad_key(KeyPad_value);
-                    }
-                    old_KeyPad_state = new_KeyPad_state;
-                }
-            }
-        }
-    } else {
-        TASK_NUMBER = 0;
-    }
-}
 
 // ***************
 // ****************
@@ -705,7 +527,7 @@ unsigned char int_to_led_hex(int number) {
         return 0x04;
     case 6:
         return 0x02;
-    case 8:
+    case 7:
         return 0x01;
     default:
         return 0x00;
@@ -767,6 +589,181 @@ void task_1(row_1, row_2) {
 
 // ****************
 
+void task_2() {
+    // the number is between 0 and 15
+    set_first_8_red_leds(0xff);
+}
+
+// ***************
+// ****************
+//
+// Handle keypad value !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//
+// ***************
+// ****************
+
+/* 
+1	2	3	Return(or back)
+4	5	6	Menu
+7	8	9	Cancel
+    0	.	Enter
+
+.: 10
+Return: 11
+Menu: 12
+Cancel: 13
+Enter: 14
+*/
+
+void clean_LCD_menu() {
+    screen_clean();
+    millisecond_of_delay(60);
+}
+
+char input_string[50];
+
+int task_number_from_keypad = 0;
+
+int state = -1;
+int parameter1 = -1;
+int parameter2 = -1;
+int parameter3 = -1;
+void handle_keypad_key(int number) {
+    if (number < 10) {
+        clean_LCD_menu();
+
+        char text[1];
+        int_to_string(number, text, 1);
+        strcat(input_string, text);
+        print_string(0, 1, input_string);
+    } else if (number == 14 || number == 15) {
+        state += 1;
+        if (state == 0) {
+            int target_number = atoi(input_string);
+            task_number_from_keypad = target_number;
+            strcpy(input_string, "");
+
+            clean_LCD_menu();
+            print_string(0, 1, "Parameter1?");
+        } else if (state == 1) {
+            int target_number = atoi(input_string);
+            parameter1 = target_number;
+            strcpy(input_string, "");
+
+            clean_LCD_menu();
+            print_string(0, 1, "Parameter2?");
+        } else if (state == 2) {
+            int target_number = atoi(input_string);
+            parameter2 = target_number;
+            strcpy(input_string, "");
+
+            clean_LCD_menu();
+            print_string(0, 1, "Parameter3?");
+        } else if (state == 3) {
+            int target_number = atoi(input_string);
+            parameter3 = target_number;
+            strcpy(input_string, "");
+
+            clean_LCD_menu();
+            print_string(0, 1, "Back to menu?");
+        } else {
+            state = -1;
+            strcpy(input_string, "");
+            parameter1 = -1;
+            parameter2 = -1;
+            parameter3 = -1;
+
+            clean_LCD_menu();
+            print_string(0, 1, "Which Task?");
+            return;
+        }
+    } else if (number == 11 || number == 12 || number == 13) {
+        state = -1;
+        strcpy(input_string, "");
+        parameter1 = -1;
+        parameter2 = -1;
+        parameter3 = -1;
+
+        clean_LCD_menu();
+        print_string(0, 1, "Which Task?");
+        return;
+    }
+
+    // handle all tasks here
+    print_number(0, 2, task_number_from_keypad);
+    if (parameter1 != -1) {
+        print_number(0, 3, parameter1);
+    }
+    if (parameter2 != -1) {
+        print_number(0, 4, parameter2);
+
+        if (parameter3 != -1) {
+            char text[20];
+            sprintf(text, "%d       %d", parameter2, parameter3);
+            print_string(0, 4, text);
+        }
+    }
+}
+
+#pragma vector = USART0RX_VECTOR
+__interrupt void usart0_rx(void) {
+    while (!(IFG1 & UTXIFG0)) {
+        // USART0 TX buffer ready?
+    }
+    STATE_FROM_SERIAL = (int)RXBUF0; // receive state
+    //TXBUF0 = (unsigned char)STATE_YOU_WANT_TO_SEND; // send state
+
+    if (STATE_FROM_SERIAL != 0 || data_arraving == 1) {
+        if (data_arraving == 0) {
+            TASK_NUMBER = STATE_FROM_SERIAL;
+            if (TASK_NUMBER == 8) {
+                an_image_received = 0;
+            }
+            data_arraving = 1;
+
+        } else {
+            if (TASK_NUMBER == 8) {     // handle image data
+                if (data_index < 256) { // data_index = 255, actually the 256 element
+                    if (STATE_FROM_SERIAL == 9) {
+                        an_image[data_index] = 1;
+                    } else {
+                        an_image[data_index] = 0;
+                    }
+                } else { // data_index == 256, actually the 257 element
+                    image_index = STATE_FROM_SERIAL;
+                }
+            }
+            if (TASK_NUMBER == 11) { // handle keypad data
+                if (data_index == 0) {
+                    KeyPad_value = STATE_FROM_SERIAL;
+                }
+                if (data_index == 1) {
+                    new_KeyPad_state = STATE_FROM_SERIAL;
+                }
+            }
+
+            data_index += 1;
+
+            if (data_index > 256) {
+                data_arraving = 0;
+                data_index = 0;
+                if (TASK_NUMBER == 8) { // handle image data after data transmission finished
+                    an_image_received = 1;
+                }
+                if (TASK_NUMBER == 11) { // handle keypad data after data transmission finished
+                    if (old_KeyPad_state != new_KeyPad_state) {
+                        // do something
+                        handle_keypad_key(KeyPad_value);
+                    }
+                    old_KeyPad_state = new_KeyPad_state;
+                }
+            }
+        }
+    } else {
+        TASK_NUMBER = 0;
+    }
+}
+
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD; // stop watchdog timer
 
@@ -795,9 +792,29 @@ int main(void) {
 
         //    an_image_received = 0;
         //}
-        print_number(0, 2, task_number_from_keypad);
-        print_number(0, 3, row1_for_task1);
-        print_number(0, 4, row2_for_task1);
+
+        switch (task_number_from_keypad) {
+        case 0:
+            break;
+        case 1:
+            task_1();
+            break;
+        case 2:
+            task_1();
+            break;
+        case 3:
+            break;
+        case 4:
+            break;
+        case 5:
+            break;
+        case 6:
+            break;
+        case 7:
+            break;
+        default:
+            break;
+        }
     }
 
     return 0;
