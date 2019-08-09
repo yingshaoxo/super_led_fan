@@ -5,6 +5,7 @@ import sensor
 import binascii
 from pyb import UART
 from pyb import Pin
+from pyb import LED
 from utime import sleep_ms
 
 
@@ -19,6 +20,7 @@ sensor.skip_frames(time=2000)
 sensor.set_auto_gain(False)  # must be turned off for color tracking
 sensor.set_auto_whitebal(False)  # must be turned off for color tracking
 clock = time.clock()
+led = LED(3)
 
 
 ####################################
@@ -197,17 +199,19 @@ def send_idle_state():
 
 
 def send_signal(task_number, data=None, picture_index=1):
+    for i in range(257):
+        send_idle_state()
     send_idle_state()  # back_to_normal
     send_int(task_number)
     if (data != None):
         data_length = len(data)
-    for index in range(256): # send 1-256 elements
+    for index in range(256):  # send 1-256 elements
         if ((data != None) and (index < data_length)):
             send_int(data[index])
-            #print(data[index])
+            # print(data[index])
         else:
             send_idle_state()
-    send_int(picture_index) # send 257
+    send_int(picture_index)  # send 257
 
 
 ####################################
@@ -224,21 +228,21 @@ def send_signal(task_number, data=None, picture_index=1):
 
 
 class Keypad():
-    pin0 = Pin('P0', Pin.IN, Pin.PULL_DOWN)
-    pin1 = Pin('P1', Pin.IN, Pin.PULL_DOWN)
-    pin2 = Pin('P2', Pin.IN, Pin.PULL_DOWN)
-    pin3 = Pin('P3', Pin.IN, Pin.PULL_DOWN)
+    pin0 = Pin('P0', Pin.IN, Pin.PULL_UP)
+    pin1 = Pin('P1', Pin.IN, Pin.PULL_UP)
+    pin2 = Pin('P2', Pin.IN, Pin.PULL_UP)
+    pin3 = Pin('P3', Pin.IN, Pin.PULL_UP)
 
-    pin4 = Pin('P6', Pin.OUT_PP, Pin.PULL_DOWN)
-    pin5 = Pin('P7', Pin.OUT_PP, Pin.PULL_DOWN)
-    pin6 = Pin('P8', Pin.OUT_PP, Pin.PULL_DOWN)
-    pin7 = Pin('P9', Pin.OUT_PP, Pin.PULL_DOWN)
+    pin4 = Pin('P6', Pin.OUT_PP, Pin.PULL_NONE)
+    pin5 = Pin('P7', Pin.OUT_PP, Pin.PULL_NONE)
+    pin6 = Pin('P8', Pin.OUT_PP, Pin.PULL_NONE)
+    pin7 = Pin('P9', Pin.OUT_PP, Pin.PULL_NONE)
 
-    state = 0
-
-    task_number = 0
-    input_start = 0
+    state = -1
     input_string = ""
+
+    task_number_from_keypad = 0
+    paramater_list = [254, 254, 254]
 
     def set_column1_to_0(self):
         self.pin4.value(0)
@@ -283,16 +287,16 @@ class Keypad():
         if (not self.input_of_row1()):
             self.set_column1_to_1()
             if (self.input_of_row1()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(500)
                 if (self.input_of_row1()):
-                    # self.handle_keypad_number(1)
+                    self.handle_keypad_number(15)
                     self.set_column1_to_0()
                     return 0  # must return, otherwise, a weird thing will happen
             self.set_column1_to_0()
 
             self.set_column2_to_1()
             if (self.input_of_row1()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(500)
                 if (self.input_of_row1()):
                     self.handle_keypad_number(0)
                     self.set_column2_to_0()
@@ -301,7 +305,7 @@ class Keypad():
 
             self.set_column3_to_1()
             if (self.input_of_row1()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(500)
                 if (self.input_of_row1()):
                     self.handle_keypad_number(10)
                     self.set_column3_to_0()
@@ -310,7 +314,7 @@ class Keypad():
 
             self.set_column4_to_1()
             if (self.input_of_row1()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(500)
                 if (self.input_of_row1()):
                     self.handle_keypad_number(14)
                     self.set_column4_to_0()
@@ -320,7 +324,7 @@ class Keypad():
         elif (not self.input_of_row2()):
             self.set_column1_to_1()
             if (self.input_of_row2()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(500)
                 if (self.input_of_row2()):
                     self.handle_keypad_number(7)
                     self.set_column1_to_0()
@@ -329,7 +333,7 @@ class Keypad():
 
             self.set_column2_to_1()
             if (self.input_of_row2()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(500)
                 if (self.input_of_row2()):
                     self.handle_keypad_number(8)
                     self.set_column2_to_0()
@@ -338,7 +342,7 @@ class Keypad():
 
             self.set_column3_to_1()
             if (self.input_of_row2()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(500)
                 if (self.input_of_row2()):
                     self.handle_keypad_number(9)
                     self.set_column3_to_0()
@@ -347,7 +351,7 @@ class Keypad():
 
             self.set_column4_to_1()
             if (self.input_of_row2()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(500)
                 if (self.input_of_row2()):
                     self.handle_keypad_number(13)
                     self.set_column4_to_0()
@@ -357,7 +361,7 @@ class Keypad():
         elif (not self.input_of_row3()):
             self.set_column1_to_1()
             if (self.input_of_row3()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(500)
                 if (self.input_of_row3()):
                     self.handle_keypad_number(4)
                     self.set_column1_to_0()
@@ -366,7 +370,7 @@ class Keypad():
 
             self.set_column2_to_1()
             if (self.input_of_row3()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(500)
                 if (self.input_of_row3()):
                     self.handle_keypad_number(5)
                     self.set_column2_to_0()
@@ -375,7 +379,7 @@ class Keypad():
 
             self.set_column3_to_1()
             if (self.input_of_row3()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(500)
                 if (self.input_of_row3()):
                     self.handle_keypad_number(6)
                     self.set_column3_to_0()
@@ -384,9 +388,9 @@ class Keypad():
 
             self.set_column4_to_1()
             if (self.input_of_row3()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(500)
                 if (self.input_of_row3()):
-                    self.handle_keypad_number(12)
+                    # self.handle_keypad_number(12)
                     self.set_column4_to_0()
                     return 0  # must return, otherwise, a weird thing will happen
             self.set_column4_to_0()
@@ -394,7 +398,7 @@ class Keypad():
         elif (not self.input_of_row4()):
             self.set_column1_to_1()
             if (self.input_of_row4()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(500)
                 if (self.input_of_row4()):
                     self.handle_keypad_number(1)
                     self.set_column1_to_0()
@@ -403,7 +407,7 @@ class Keypad():
 
             self.set_column2_to_1()
             if (self.input_of_row4()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(500)
                 if (self.input_of_row4()):
                     self.handle_keypad_number(2)
                     self.set_column2_to_0()
@@ -412,7 +416,7 @@ class Keypad():
 
             self.set_column3_to_1()
             if (self.input_of_row4()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(500)
                 if (self.input_of_row4()):
                     self.handle_keypad_number(3)
                     self.set_column3_to_0()
@@ -421,9 +425,9 @@ class Keypad():
 
             self.set_column4_to_1()
             if (self.input_of_row4()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(500)
                 if (self.input_of_row4()):
-                    self.handle_keypad_number(11)
+                    # self.handle_keypad_number(11)
                     self.set_column4_to_0()
                     return 0  # must return, otherwise, a weird thing will happen
             self.set_column4_to_0()
@@ -435,37 +439,57 @@ class Keypad():
         7	8	9	Cancel
             0	.	Enter
 
+        : 15
         .: 10
         Return: 11
         Menu: 12
         Cancel: 13
         Enter: 14
+
+        first press number + confire_key to SET task number
+        then parameter
         """
-        print(number)
+        led.on()
 
-        #if (self.input_start == 0):
-        #    if ((number >= 0) and (number < 10)):
-        #        self.input_string += str(number)
-        #        self.input_start = 1
-        #elif (self.input_start == 1):
-        #    if ((number >= 0) and (number < 10)):
-        #        self.input_string += str(number)
-        #    elif (number > 0):
-        #        if (number == 13):
-        #            self.input_string = ""
-        #            self.input_start = 0
-        #        elif (number == 14):
-        #            self.target_number = int(self.input_string)
-        #            print(self.target_number)
-    
-        #            self.input_string = ""
-        #            self.input_start = 0
+        if (number != 10): # != resend key
+            if (number < 10):
+                self.input_string += str(number)
+            elif (number == 14 or number == 15): # confire button
+                try:
+                    self.state += 1
+                    if (self.state == 0):
+                        self.task_number_from_keypad = int(self.input_string)
+                        self.input_string = ""
+                    if (self.state == 1):
+                        self.paramater_list[0] = int(self.input_string)
+                        self.input_string = ""
+                    if (self.state == 2):
+                        self.paramater_list[1] = int(self.input_string)
+                        self.input_string = ""
+                    if (self.state == 3):
+                        self.paramater_list[2] = int(self.input_string)
+                        self.input_string = ""
+                    if (self.state > 3):
+                        return
+                except Exception as e:
+                    self.state = -1
+                    self.input_string = ""
+                    self.paramater_list = [254, 254, 254]
+                    self.task_number_from_keypad = 0
+            elif (number == 11 or number == 12 or number == 13): # cancle button
+                self.state = -1
+                self.input_string = ""
+                self.paramater_list = [254, 254, 254]
+                self.task_number_from_keypad = 0
+        
+        # send data according to different task
+        if (self.task_number_from_keypad != 0):
+            send_signal(self.task_number_from_keypad, data=[self.paramater_list[0], self.paramater_list[1], self.paramater_list[2]])
 
-        # send keypad value to remote
-        send_signal(11, data=[number, self.state])
-        self.state += 1
-        if self.state > 255:
-            self.state = 0
+        print("key:", number, "task:", self.task_number_from_keypad, "p:", self.paramater_list)
+
+        sleep_ms(150)
+        led.off()
 
 
 keypad = Keypad()
@@ -474,7 +498,8 @@ while(True):
     clock.tick()
     #img = sensor.snapshot().lens_corr(1.8)
 
-    keypad.catch_keypad_input()
+    #keypad.catch_keypad_input()
+    send_signal(1, data=[6, 8 ,7])
 
     if DEBUG == 1:
         detect_all_sub_image(img)

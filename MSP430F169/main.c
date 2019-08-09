@@ -316,11 +316,63 @@ Cancel: 13
 Enter: 14
 */
 
-int human_set_target_number = 0;
-int input_start = 0;
 char input_string[50];
+
+int start_to_set_task = 0;
+int task_number_from_keypad = 0;
+
+int start_to_set_row1 = 0;
+int start_to_set_row2 = 0;
+int row1_for_task1 = 0;
+int row2_for_task1 = 0;
 void handle_keypad_key(int number) {
-    if (input_start == 0) {
+    if (start_to_set_row1 == 1) {
+        if ((number >= 0) && (number < 10)) {
+            char text[1];
+            int_to_string(number, text, 1);
+            strcat(input_string, text);
+            print_string(0, 1, input_string);
+        } else if (number > 10) {
+            if (number == 13) {
+                print_string(0, 1, "Row1(0-15)?");
+                strcpy(input_string, "");
+            } else if (number == 14) {
+                int target_number = atoi(input_string);
+                row1_for_task1 = target_number;
+                start_to_set_row1 = 0;
+                start_to_set_row2 = 1;
+
+                print_string(0, 1, "Row2(0-15)?");
+                strcpy(input_string, "");
+            }
+        }
+        return;
+    }
+
+    if (start_to_set_row2 == 1) {
+        if ((number >= 0) && (number < 10)) {
+            char text[1];
+            int_to_string(number, text, 1);
+            strcat(input_string, text);
+            print_string(0, 1, input_string);
+        } else if (number > 10) {
+            if (number == 13) {
+                print_string(0, 1, "Row2(0-15)?");
+                strcpy(input_string, "");
+            } else if (number == 14) {
+                int target_number = atoi(input_string);
+                row2_for_task1 = target_number;
+                start_to_set_row1 = 0;
+                start_to_set_row2 = 0;
+
+                print_string(0, 1, "Which Task?");
+                strcpy(input_string, "");
+            }
+        }
+        return;
+    }
+
+    if (start_to_set_task == 0) {
         screen_clean();
         millisecond_of_delay(10);
         if ((number >= 0) && (number < 10)) {
@@ -329,26 +381,34 @@ void handle_keypad_key(int number) {
             strcat(input_string, text);
             print_string(0, 1, input_string);
 
-            input_start = 1;
+            start_to_set_task = 1;
         }
-    } else if (input_start == 1) {
+    } else if (start_to_set_task == 1) {
         if ((number >= 0) && (number < 10)) {
-            char text[1];
-            int_to_string(number, text, 1);
-            strcat(input_string, text);
-            print_string(0, 1, input_string);
-        } else if (number > 0) {
+            print_string(0, 1, "Which Task?");
+            strcpy(input_string, "");
+            start_to_set_task = 0;
+        } else if (number > 10) {
             if (number == 13) {
                 print_string(0, 1, "Which Task?");
                 strcpy(input_string, "");
-                input_start = 0;
+                start_to_set_task = 0;
+
             } else if (number == 14) {
                 int target_number = atoi(input_string);
-                human_set_target_number = target_number;
+                if (target_number != 1) {
+                    task_number_from_keypad = target_number;
 
-                print_string(0, 1, "Which Task?");
-                strcpy(input_string, "");
-                input_start = 0;
+                    print_string(0, 1, "Which Task?");
+                    strcpy(input_string, "");
+                    start_to_set_task = 0;
+                } else {
+                    task_number_from_keypad = target_number;
+                    start_to_set_row1 = 1;
+
+                    print_string(0, 1, "Row1(0-15)?");
+                    strcpy(input_string, "");
+                }
             }
         }
     }
@@ -735,6 +795,9 @@ int main(void) {
 
         //    an_image_received = 0;
         //}
+        print_number(0, 2, task_number_from_keypad);
+        print_number(0, 3, row1_for_task1);
+        print_number(0, 4, row2_for_task1);
     }
 
     return 0;
