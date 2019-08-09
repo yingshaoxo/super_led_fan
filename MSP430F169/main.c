@@ -310,16 +310,10 @@ void initialize_LCD() {
     0	.	Enter
 
 .: 10
-
 Return: 11
 Menu: 12
 Cancel: 13
 Enter: 14
-
-Return: -1
-Menu: -2
-Cancel: -3
-Enter: -4
 */
 
 int human_set_target_number = 0;
@@ -635,37 +629,81 @@ void initialize_16_rows_LED() {
     P6OUT &= ~(BIT0 | BIT1 | BIT2 | BIT3);                             // set P6.0-P6.3 to low
 }
 
+unsigned char int_to_led_hex(int number) {
+    switch (number) {
+    case 0:
+        return 0x80;
+    case 1:
+        return 0x40;
+    case 2:
+        return 0x20;
+    case 3:
+        return 0x10;
+    case 4:
+        return 0x08;
+    case 5:
+        return 0x04;
+    case 6:
+        return 0x02;
+    case 8:
+        return 0x01;
+    default:
+        return 0x00;
+    }
+}
+
 void set_first_8_red_leds(unsigned char byte_data) {
     enable_led_chip_1;
     P5OUT = byte_data;
+    disable_led_chip_1;
 }
 
 void set_first_8_green_leds(unsigned char byte_data) {
     enable_led_chip_2;
     P5OUT = byte_data;
+    disable_led_chip_1;
 }
 
-void set_last_8_red_leds(unsigned char byte_data) {
+void set_second_8_red_leds(unsigned char byte_data) {
     enable_led_chip_3;
     P5OUT = byte_data;
+    disable_led_chip_1;
 }
 
-void set_last_8_green_leds(unsigned char byte_data) {
+void set_second_8_green_leds(unsigned char byte_data) {
     enable_led_chip_4;
     P5OUT = byte_data;
+    disable_led_chip_1;
 }
 
 void turn_off_all_leds() {
     P5OUT = 0x00;
-    disable_led_chip_1;
-    disable_led_chip_2;
-    disable_led_chip_3;
-    disable_led_chip_4;
 }
 
 // ****************
 
 // Task 1
+
+// ****************
+
+void task_1(row_1, row_2) {
+    // the number is between 0 and 15
+    if ((row_1 < 8) && (row_2 < 8)) {
+        set_first_8_red_leds(int_to_led_hex(row_1) | int_to_led_hex(row_2));
+    } else if ((row_1 > 7) && (row_2 > 7)) {
+        set_second_8_red_leds(int_to_led_hex(row_1) | int_to_led_hex(row_2));
+    } else if ((row_1 < 8) && (row_2 > 7)) {
+        set_first_8_red_leds(int_to_led_hex(row_1));
+        set_second_8_red_leds(int_to_led_hex(row_2));
+    } else if ((row_1 > 7) && (row_2 < 8)) {
+        set_second_8_red_leds(int_to_led_hex(row_1));
+        set_first_8_red_leds(int_to_led_hex(row_2));
+    }
+}
+
+// ****************
+
+// Task 2
 
 // ****************
 

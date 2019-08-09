@@ -229,12 +229,16 @@ class Keypad():
     pin2 = Pin('P2', Pin.IN, Pin.PULL_DOWN)
     pin3 = Pin('P3', Pin.IN, Pin.PULL_DOWN)
 
-    pin4 = Pin('P6', Pin.OUT_PP)
-    pin5 = Pin('P7', Pin.OUT_PP)
-    pin6 = Pin('P8', Pin.OUT_PP)
-    pin7 = Pin('P9', Pin.OUT_PP)
+    pin4 = Pin('P6', Pin.OUT_PP, Pin.PULL_DOWN)
+    pin5 = Pin('P7', Pin.OUT_PP, Pin.PULL_DOWN)
+    pin6 = Pin('P8', Pin.OUT_PP, Pin.PULL_DOWN)
+    pin7 = Pin('P9', Pin.OUT_PP, Pin.PULL_DOWN)
 
     state = 0
+
+    task_number = 0
+    input_start = 0
+    input_string = ""
 
     def set_column1_to_0(self):
         self.pin4.value(0)
@@ -279,7 +283,7 @@ class Keypad():
         if (not self.input_of_row1()):
             self.set_column1_to_1()
             if (self.input_of_row1()):
-                self.millisecond_of_delay(400)
+                self.millisecond_of_delay(300)
                 if (self.input_of_row1()):
                     # self.handle_keypad_number(1)
                     self.set_column1_to_0()
@@ -288,7 +292,7 @@ class Keypad():
 
             self.set_column2_to_1()
             if (self.input_of_row1()):
-                self.millisecond_of_delay(400)
+                self.millisecond_of_delay(300)
                 if (self.input_of_row1()):
                     self.handle_keypad_number(0)
                     self.set_column2_to_0()
@@ -297,7 +301,7 @@ class Keypad():
 
             self.set_column3_to_1()
             if (self.input_of_row1()):
-                self.millisecond_of_delay(400)
+                self.millisecond_of_delay(300)
                 if (self.input_of_row1()):
                     self.handle_keypad_number(10)
                     self.set_column3_to_0()
@@ -306,7 +310,7 @@ class Keypad():
 
             self.set_column4_to_1()
             if (self.input_of_row1()):
-                self.millisecond_of_delay(400)
+                self.millisecond_of_delay(300)
                 if (self.input_of_row1()):
                     self.handle_keypad_number(14)
                     self.set_column4_to_0()
@@ -316,7 +320,7 @@ class Keypad():
         elif (not self.input_of_row2()):
             self.set_column1_to_1()
             if (self.input_of_row2()):
-                self.millisecond_of_delay(400)
+                self.millisecond_of_delay(300)
                 if (self.input_of_row2()):
                     self.handle_keypad_number(7)
                     self.set_column1_to_0()
@@ -325,7 +329,7 @@ class Keypad():
 
             self.set_column2_to_1()
             if (self.input_of_row2()):
-                self.millisecond_of_delay(400)
+                self.millisecond_of_delay(300)
                 if (self.input_of_row2()):
                     self.handle_keypad_number(8)
                     self.set_column2_to_0()
@@ -334,7 +338,7 @@ class Keypad():
 
             self.set_column3_to_1()
             if (self.input_of_row2()):
-                self.millisecond_of_delay(400)
+                self.millisecond_of_delay(300)
                 if (self.input_of_row2()):
                     self.handle_keypad_number(9)
                     self.set_column3_to_0()
@@ -343,7 +347,7 @@ class Keypad():
 
             self.set_column4_to_1()
             if (self.input_of_row2()):
-                self.millisecond_of_delay(400)
+                self.millisecond_of_delay(300)
                 if (self.input_of_row2()):
                     self.handle_keypad_number(13)
                     self.set_column4_to_0()
@@ -353,7 +357,7 @@ class Keypad():
         elif (not self.input_of_row3()):
             self.set_column1_to_1()
             if (self.input_of_row3()):
-                self.millisecond_of_delay(400)
+                self.millisecond_of_delay(300)
                 if (self.input_of_row3()):
                     self.handle_keypad_number(4)
                     self.set_column1_to_0()
@@ -362,7 +366,7 @@ class Keypad():
 
             self.set_column2_to_1()
             if (self.input_of_row3()):
-                self.millisecond_of_delay(400)
+                self.millisecond_of_delay(300)
                 if (self.input_of_row3()):
                     self.handle_keypad_number(5)
                     self.set_column2_to_0()
@@ -371,7 +375,7 @@ class Keypad():
 
             self.set_column3_to_1()
             if (self.input_of_row3()):
-                self.millisecond_of_delay(400)
+                self.millisecond_of_delay(300)
                 if (self.input_of_row3()):
                     self.handle_keypad_number(6)
                     self.set_column3_to_0()
@@ -380,7 +384,7 @@ class Keypad():
 
             self.set_column4_to_1()
             if (self.input_of_row3()):
-                self.millisecond_of_delay(400)
+                self.millisecond_of_delay(300)
                 if (self.input_of_row3()):
                     self.handle_keypad_number(12)
                     self.set_column4_to_0()
@@ -390,7 +394,7 @@ class Keypad():
         elif (not self.input_of_row4()):
             self.set_column1_to_1()
             if (self.input_of_row4()):
-                self.millisecond_of_delay(400)
+                self.millisecond_of_delay(300)
                 if (self.input_of_row4()):
                     self.handle_keypad_number(1)
                     self.set_column1_to_0()
@@ -399,7 +403,7 @@ class Keypad():
 
             self.set_column2_to_1()
             if (self.input_of_row4()):
-                self.millisecond_of_delay(400)
+                self.millisecond_of_delay(300)
                 if (self.input_of_row4()):
                     self.handle_keypad_number(2)
                     self.set_column2_to_0()
@@ -408,7 +412,7 @@ class Keypad():
 
             self.set_column3_to_1()
             if (self.input_of_row4()):
-                self.millisecond_of_delay(400)
+                self.millisecond_of_delay(300)
                 if (self.input_of_row4()):
                     self.handle_keypad_number(3)
                     self.set_column3_to_0()
@@ -417,7 +421,7 @@ class Keypad():
 
             self.set_column4_to_1()
             if (self.input_of_row4()):
-                self.millisecond_of_delay(400)
+                self.millisecond_of_delay(300)
                 if (self.input_of_row4()):
                     self.handle_keypad_number(11)
                     self.set_column4_to_0()
@@ -432,21 +436,33 @@ class Keypad():
             0	.	Enter
 
         .: 10
-
         Return: 11
         Menu: 12
         Cancel: 13
         Enter: 14
-
-        Return: -1
-        Menu: -2
-        Cancel: -3
-        Enter: -4
         """
         print(number)
 
-        send_signal(11, data=[number, self.state])
+        if (self.input_start == 0):
+            if ((number >= 0) and (number < 10)):
+                self.input_string += str(number)
+                self.input_start = 1
+        elif (self.input_start == 1):
+            if ((number >= 0) and (number < 10)):
+                self.input_string += str(number)
+            elif (number > 0):
+                if (number == 13):
+                    self.input_string = ""
+                    self.input_start = 0
+                elif (number == 14):
+                    self.target_number = int(self.input_string)
+                    print(self.target_number)
+    
+                    self.input_string = ""
+                    self.input_start = 0
 
+        # send keypad value to remote
+        send_signal(11, data=[number, self.state])
         self.state += 1
         if self.state > 255:
             self.state = 0
@@ -456,7 +472,7 @@ keypad = Keypad()
 
 while(True):
     clock.tick()
-    img = sensor.snapshot().lens_corr(1.8)
+    #img = sensor.snapshot().lens_corr(1.8)
 
     keypad.catch_keypad_input()
 
