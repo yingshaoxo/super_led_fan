@@ -350,22 +350,262 @@ unsigned int data_index = 0;
 
 //unsigned char an_image[257];
 unsigned char an_image[256] = {
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
 };
 unsigned int image_index = 0;
 unsigned int an_image_received = 0;
@@ -472,6 +712,7 @@ void initialize_infrared_sensor() {
 unsigned long int temporary_accumulated_T;
 unsigned long int infrared_detection_counting = 0;
 unsigned long int infrared_detection_counting2 = 0;
+unsigned long int infrared_detection_counting3 = 0;
 unsigned long int the_average_T = 0;                         //T
 unsigned long int the_time_during_one_part_of_240_parts = 0; //T1
 unsigned int enter_pin_interrupt = 0;
@@ -488,6 +729,7 @@ __interrupt void Port_1(void) {
             }
             infrared_detection_counting++;
             infrared_detection_counting2++;
+            infrared_detection_counting3++;
             if (infrared_detection_counting > 19) {
                 the_average_T = temporary_accumulated_T / 10;
                 the_time_during_one_part_of_240_parts = the_average_T / 240;
@@ -495,6 +737,9 @@ __interrupt void Port_1(void) {
             }
             if (infrared_detection_counting2 > 30) {
                 infrared_detection_counting2 = 0;
+            }
+            if (infrared_detection_counting3 > 1050) {
+                infrared_detection_counting3 = 0;
             }
             TB0CCR0 = 50000; // start to increase TBR microseconds
         }
@@ -807,6 +1052,388 @@ void task6() {
     }
 }
 
+// ****************
+
+// Task 7
+
+// ****************
+
+void task7() {
+    unsigned char i, index = 0;
+
+    if (infrared_detection_counting3 < 150) {
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(point_square[index]);
+            set_second_8_red_leds(0x00);
+            delay_for_leds(3);
+            set_first_8_green_leds(0x00);
+            set_second_8_green_leds(point_square[index + 16]);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+        delay_for_leds(44);
+
+        index = 32;
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(point_square[index]);
+            set_second_8_red_leds(0x00);
+            delay_for_leds(3);
+            set_first_8_green_leds(0x00);
+            set_second_8_green_leds(point_square[index + 16]);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+        delay_for_leds(44);
+
+        index = 64;
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(point_square[index]);
+            set_second_8_red_leds(0x00);
+            delay_for_leds(3);
+            set_first_8_green_leds(0x00);
+            set_second_8_green_leds(point_square[index + 16]);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+    } else if ((infrared_detection_counting3 > 149) && (infrared_detection_counting3 < 300)) {
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(point_square[index]);
+            set_second_8_red_leds(point_square[index + 16]);
+            delay_for_leds(3);
+            set_first_8_green_leds(point_square[index]);
+            set_second_8_green_leds(0x00);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+        delay_for_leds(44);
+
+        index = 32;
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(point_square[index]);
+            set_second_8_red_leds(point_square[index + 16]);
+            delay_for_leds(3);
+            set_first_8_green_leds(point_square[index]);
+            set_second_8_green_leds(0x00);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+        delay_for_leds(44);
+
+        index = 64;
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(point_square[index]);
+            set_second_8_red_leds(point_square[index + 16]);
+            delay_for_leds(3);
+            set_first_8_green_leds(point_square[index]);
+            set_second_8_green_leds(0x00);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+    } else if ((infrared_detection_counting3 > 299) && (infrared_detection_counting3 < 450)) {
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(0x00);
+            set_second_8_red_leds(point_square[index + 16]);
+            delay_for_leds(3);
+            set_first_8_green_leds(point_square[index]);
+            set_second_8_green_leds(point_square[index + 16]);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+        delay_for_leds(44);
+
+        index = 32;
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(0x00);
+            set_second_8_red_leds(point_square[index + 16]);
+            delay_for_leds(3);
+            set_first_8_green_leds(point_square[index]);
+            set_second_8_green_leds(point_square[index + 16]);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+        delay_for_leds(44);
+
+        index = 64;
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(0x00);
+            set_second_8_red_leds(point_square[index + 16]);
+            delay_for_leds(3);
+            set_first_8_green_leds(point_square[index]);
+            set_second_8_green_leds(point_square[index + 16]);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+    } else if ((infrared_detection_counting3 > 449) && (infrared_detection_counting3 < 600)) {
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(point_square[index]);
+            set_second_8_red_leds(point_square[index + 16]);
+            delay_for_leds(3);
+            set_first_8_green_leds(0x00);
+            set_second_8_green_leds(0x00);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+        delay_for_leds(44);
+
+        index = 32;
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(0x00);
+            set_second_8_red_leds(0x00);
+            delay_for_leds(3);
+            set_first_8_green_leds(point_square[index]);
+            set_second_8_green_leds(point_square[index + 16]);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+        delay_for_leds(44);
+
+        index = 64;
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(point_square[index]);
+            set_second_8_red_leds(point_square[index + 16]);
+            delay_for_leds(3);
+            set_first_8_green_leds(point_square[index]);
+            set_second_8_green_leds(point_square[index + 16]);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+    } else if ((infrared_detection_counting3 > 599) && (infrared_detection_counting3 < 750)) {
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(0x00);
+            set_second_8_red_leds(0x00);
+            delay_for_leds(3);
+            set_first_8_green_leds(point_square[index]);
+            set_second_8_green_leds(point_square[index + 16]);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+        delay_for_leds(44);
+
+        index = 32;
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(0x00);
+            set_second_8_red_leds(0x00);
+            delay_for_leds(3);
+            set_first_8_green_leds(point_square[index]);
+            set_second_8_green_leds(point_square[index + 16]);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+        delay_for_leds(44);
+
+        index = 64;
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(0x00);
+            set_second_8_red_leds(0x00);
+            delay_for_leds(3);
+            set_first_8_green_leds(point_square[index]);
+            set_second_8_green_leds(point_square[index + 16]);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+    } else if ((infrared_detection_counting3 > 749) && (infrared_detection_counting3 < 900)) {
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(point_square[index]);
+            set_second_8_red_leds(point_square[index + 16]);
+            delay_for_leds(3);
+            set_first_8_green_leds(0x00);
+            set_second_8_green_leds(0x00);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+        delay_for_leds(44);
+
+        index = 32;
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(point_square[index]);
+            set_second_8_red_leds(point_square[index + 16]);
+            delay_for_leds(3);
+            set_first_8_green_leds(0x00);
+            set_second_8_green_leds(0x00);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+        delay_for_leds(44);
+
+        index = 64;
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(point_square[index]);
+            set_second_8_red_leds(point_square[index + 16]);
+            delay_for_leds(3);
+            set_first_8_green_leds(0x00);
+            set_second_8_green_leds(0x00);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+    } else if ((infrared_detection_counting3 > 899) && (infrared_detection_counting3 < 1050)) {
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(point_square[index]);
+            set_second_8_red_leds(point_square[index + 16]);
+            delay_for_leds(3);
+            set_first_8_green_leds(point_square[index]);
+            set_second_8_green_leds(point_square[index + 16]);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+        delay_for_leds(44);
+
+        index = 32;
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(point_square[index]);
+            set_second_8_red_leds(point_square[index + 16]);
+            delay_for_leds(3);
+            set_first_8_green_leds(point_square[index]);
+            set_second_8_green_leds(point_square[index + 16]);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+        delay_for_leds(44);
+
+        index = 64;
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(point_square[index]);
+            set_second_8_red_leds(point_square[index + 16]);
+            delay_for_leds(3);
+            set_first_8_green_leds(point_square[index]);
+            set_second_8_green_leds(point_square[index + 16]);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+    }
+}
+
+// ****************
+
+// Other Task
+
+// ****************
+
+void special_gift() {
+    unsigned char special_point_square = {
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    };
+}
+
 // ***************
 // ****************
 //
@@ -1101,6 +1728,10 @@ int main(void) {
                 task6();
                 break;
             case 7:
+                task7();
+                break;
+            case 8:
+                special_gift();
                 break;
             default:
                 break;
