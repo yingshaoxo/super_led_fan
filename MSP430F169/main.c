@@ -453,8 +453,36 @@ void initialize_infrared_sensor() {
 
 unsigned long int temporary_accumulated_T;
 unsigned long int infrared_detection_counting = 0;
+unsigned long int infrared_detection_counting2 = 0;
 unsigned long int the_average_T = 0;                         //T
 unsigned long int the_time_during_one_part_of_240_parts = 0; //T1
+unsigned int enter_pin_interrupt = 0;
+
+#pragma vector = PORT1_VECTOR
+__interrupt void Port_1(void) {
+    if (P1IFG & echo_pin) // is that interrupt request come from echo_pin? is there an rising or falling edge has been detected? Each PxIFGx bit is the interrupt flag for its corresponding I/O pin and is set when the selected input signal edge occurs at the pin.
+    {
+        if (P1IES & echo_pin) // is this the falling edge? (P1IES & echo_pin) == 1
+        {
+            enter_pin_interrupt = 1;
+            if (infrared_detection_counting > 9) {
+                temporary_accumulated_T += TB0R; // TBR is a us time unit at this case; may have error if change happens too fast; use array is a sulution
+            }
+            infrared_detection_counting++;
+            infrared_detection_counting2++;
+            if (infrared_detection_counting > 19) {
+                the_average_T = temporary_accumulated_T / 10;
+                the_time_during_one_part_of_240_parts = the_average_T / 240;
+                infrared_detection_counting = 10;
+            }
+            if (infrared_detection_counting2 > 30) {
+                infrared_detection_counting2 = 0;
+            }
+            TB0CCR0 = 50000; // start to increase TBR microseconds
+        }
+        P1IFG &= ~echo_pin; // clear flag, so it can start to detect new rising or falling edge, then a new call to this interrupt function will be allowed.
+    }
+}
 
 #pragma vector = TIMER0_B0_VECTOR
 __interrupt void Timer_B(void) {
@@ -541,15 +569,8 @@ void turn_off_all_leds() {
 }
 
 void delay_for_leds(unsigned char length) {
-    //unsigned long t1 = the_time_during_one_part_of_240_parts;
-
-    //while (length--) {
-    //    while (t1--) {
-    //    }
-    //}
-
     while (length--) {
-        millisecond_of_delay(1);
+        __delay_cycles(200);
     }
 }
 
@@ -645,19 +666,34 @@ unsigned char point_square[32] = {
 };
 
 void task3() {
-    unsigned char idx = 0, i = 0;
+    unsigned char i = 0;
     for (i = 0; i < 16; i++) {
-        set_first_8_red_leds(point_square[idx]);
-        set_second_8_red_leds(point_square[idx + 16]);
+        set_first_8_red_leds(0xff);
+        set_second_8_red_leds(0xff);
         delay_for_leds(3);
-        set_first_8_green_leds(point_square[idx]);
-        set_second_8_green_leds(point_square[idx + 16]);
+        set_first_8_green_leds(0x00);
+        set_second_8_green_leds(0x00);
         delay_for_leds(2);
 
-        delay_for_leds(6);
-        idx++;
+        delay_for_leds(3);
+        turn_off_all_leds();
+        delay_for_leds(3);
     }
-    turn_off_all_leds();
+
+    delay_for_leds(44);
+
+    for (i = 0; i < 16; i++) {
+        set_first_8_red_leds(0xff);
+        set_second_8_red_leds(0xff);
+        delay_for_leds(3);
+        set_first_8_green_leds(0x00);
+        set_second_8_green_leds(0x00);
+        delay_for_leds(2);
+
+        delay_for_leds(3);
+        turn_off_all_leds();
+        delay_for_leds(3);
+    }
 }
 
 // ****************
@@ -666,7 +702,52 @@ void task3() {
 
 // ****************
 
+unsigned char inverse_task4 = 0;
 void task4() {
+    unsigned char i = 0;
+    unsigned char value = 5;
+    
+    if (inverse_task4) {
+        value = (30 - infrared_detection_counting2) / 5;
+    } else {
+        value = infrared_detection_counting2 / 5;
+    }
+    value = infrared_detection_counting2 / 5;
+    if (value == 0) {
+        if (inverse_task4) {
+            inverse_task4 = 0;
+        } else {
+            inverse_task4 = 1;
+        }
+    }
+
+    for (i = 0; i < 16; i++) {
+        set_first_8_red_leds(0xff);
+        set_second_8_red_leds(0xff);
+        delay_for_leds(value);
+        set_first_8_green_leds(0x00);
+        set_second_8_green_leds(0x00);
+        delay_for_leds(value);
+
+        delay_for_leds(3);
+        turn_off_all_leds();
+        delay_for_leds(3);
+    }
+
+    delay_for_leds(44);
+
+    for (i = 0; i < 16; i++) {
+        set_first_8_red_leds(0xff);
+        set_second_8_red_leds(0xff);
+        delay_for_leds(value);
+        set_first_8_green_leds(0x00);
+        set_second_8_green_leds(0x00);
+        delay_for_leds(value);
+
+        delay_for_leds(3);
+        turn_off_all_leds();
+        delay_for_leds(3);
+    }
 }
 
 // ***************
@@ -839,52 +920,6 @@ __interrupt void usart0_rx(void) {
     }
 }
 
-#pragma vector = PORT1_VECTOR
-__interrupt void Port_1(void) {
-    if (P1IFG & echo_pin) // is that interrupt request come from echo_pin? is there an rising or falling edge has been detected? Each PxIFGx bit is the interrupt flag for its corresponding I/O pin and is set when the selected input signal edge occurs at the pin.
-    {
-        if (P1IES & echo_pin) // is this the falling edge? (P1IES & echo_pin) == 1
-        {
-            if (infrared_detection_counting > 9) {
-                temporary_accumulated_T += TB0R; // TBR is a us time unit at this case; may have error if change happens too fast; use array is a sulution
-            }
-            infrared_detection_counting++;
-            if (infrared_detection_counting > 19) {
-                the_average_T = temporary_accumulated_T / 10;
-                the_time_during_one_part_of_240_parts = the_average_T / 240;
-                infrared_detection_counting = 10;
-            }
-            TB0CCR0 = 50000; // start to increase TBR microseconds
-            switch (task_number_from_keypad) {
-            case 0:
-                break;
-            case 1:
-                if (parameter1 != -1 && parameter2 != -1) {
-                    task1(parameter1, parameter2);
-                }
-                break;
-            case 2:
-                task2();
-                break;
-            case 3:
-                task3();
-                break;
-            case 4:
-                break;
-            case 5:
-                break;
-            case 6:
-                break;
-            case 7:
-                break;
-            default:
-                break;
-            }
-        }
-        P1IFG &= ~echo_pin; // clear flag, so it can start to detect new rising or falling edge, then a new call to this interrupt function will be allowed.
-    }
-}
-
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD; // stop watchdog timer
 
@@ -915,6 +950,35 @@ int main(void) {
 
         //    an_image_received = 0;
         //}
+        if (enter_pin_interrupt == 1) {
+            switch (task_number_from_keypad) {
+            case 0:
+                break;
+            case 1:
+                if (parameter1 != -1 && parameter2 != -1) {
+                    task1(parameter1, parameter2);
+                }
+                break;
+            case 2:
+                task2();
+                break;
+            case 3:
+                task3();
+                break;
+            case 4:
+                task4();
+                break;
+            case 5:
+                break;
+            case 6:
+                break;
+            case 7:
+                break;
+            default:
+                break;
+            }
+            enter_pin_interrupt = 0;
+        }
     }
 
     return 0;

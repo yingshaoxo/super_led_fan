@@ -197,19 +197,10 @@ Every signal start by `0`, then `signal`, then follow by 257 data.
 def send_idle_state():
     send_int(0)
 
-last_tick_in_second = time.ticks()/1000
 def send_signal(task_number, data=None, picture_index=1):
-    #for i in range(300):
-    #    send_idle_state()
-    global last_tick_in_second
-    new_tick_in_second = time.ticks()/1000
-    print(new_tick_in_second - last_tick_in_second)
-    if ((new_tick_in_second - last_tick_in_second) > 1): # we send many zeros before a new input
-        for i in range(300):
-            send_idle_state()
-        last_tick_in_second = new_tick_in_second
+    for i in range(300): # back_to_normal
+        send_idle_state()
 
-    send_idle_state()  # back_to_normal
     send_int(task_number)
     if (data != None):
         data_length = len(data)
