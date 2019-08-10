@@ -131,6 +131,7 @@ def print_out_detected_points(an_image):
     return an_image
 
 
+
 ####################################
 ####################################
 ####################################
@@ -213,6 +214,34 @@ def send_signal(task_number, data=None, picture_index=1):
     send_int(picture_index) # send 257
 
 
+image_data1 = []
+image_data2 = []
+image_data3 = []
+
+def capture_image_data(index_of_image):
+    global image_data1
+    global image_data2
+    global image_data3
+    img = sensor.snapshot().lens_corr(1.8)
+    detect_all_sub_image(img)
+    if (index_of_image == 1):
+        image_data1 = detected_point_list
+    elif (index_of_image == 2):
+        image_data2 = detected_point_list
+    elif (index_of_image == 3):
+        image_data3 = detected_point_list
+
+def send_image_data(index_of_image):
+    global image_data1
+    global image_data2
+    global image_data3
+    if (index_of_image == 1):
+        send_signal(8, data=image_data1)
+    elif (index_of_image == 2):
+        send_signal(8, data=image_data2)
+    elif (index_of_image == 3):
+        send_signal(8, data=image_data3)
+
 ####################################
 ####################################
 ####################################
@@ -239,9 +268,11 @@ class Keypad():
 
     state = 0
 
-    task_number = 0
-    input_start = 0
+    task_number_from_keypad = 0
     input_string = ""
+    paramater_list = [-1, -1, -1]
+    input_level = -1
+
 
     def set_column1_to_0(self):
         self.pin4.value(0)
@@ -446,25 +477,56 @@ class Keypad():
         """
         led.on()
 
-        print(number)
+        if (number != 10): # resend
+            if (number < 10):
+                self.input_string += str(number)
+            elif (number == 14 or number == 15): # confire button
+                self.input_level += 1
+                try:
+                    if (self.input_level == 0):
+                        self.task_number_from_keypad = int(self.input_string)
+                        self.input_string = ""
+                    if (self.input_level == 1):
+                        self.paramater_list[0] = int(self.input_string)
+                        self.input_string = ""
+                    if (self.input_level == 2):
+                        self.paramater_list[1] = int(self.input_string)
+                        self.input_string = ""
+                    if (self.input_level == 3):
+                        self.paramater_list[2] = int(self.input_string)
+                        self.input_string = ""
+                    if (self.input_level > 3):
+                        self.input_level = -1
+                        self.input_string = ""
+                        paramater_list = [-1, -1, -1]
+                except Exception as e:
+                    self.input_level = -1
+                    self.input_string = ""
+                    self.paramater_list = [-1, -1, -1]
+                    self.task_number_from_keypad = 0
+            elif (number == 11 or number == 12 or number == 13): # cancle button
+                self.input_level = -1
+                self.input_string = ""
+                self.paramater_list = [-1, -1, -1]
+                self.task_number_from_keypad = 0
+        
 
-        #if (self.input_start == 0):
-        #    if ((number >= 0) and (number < 10)):
-        #        self.input_string += str(number)
-        #        self.input_start = 1
-        #elif (self.input_start == 1):
-        #    if ((number >= 0) and (number < 10)):
-        #        self.input_string += str(number)
-        #    elif (number > 0):
-        #        if (number == 13):
-        #            self.input_string = ""
-        #            self.input_start = 0
-        #        elif (number == 14):
-        #            self.target_number = int(self.input_string)
-        #            print(self.target_number)
-    
-        #            self.input_string = ""
-        #            self.input_start = 0
+        print("number:", number, "state:", self.state, "string:", self.input_string)
+        print("task:", self.task_number_from_keypad, "p:", self.paramater_list)
+
+        if (self.task_number_from_keypad == 5):
+            if (self.paramater_list[2] == 3):
+                if (image_data3 == []):
+                    capture_image_data(3)
+                send_image_data(3)
+            elif (self.paramater_list[1] == 2):
+                if (image_data2 == []):
+                    capture_image_data(2)
+                send_image_data(2)
+            elif (self.paramater_list[0] == 1):
+                if (image_data1 == []):
+                    capture_image_data(1)
+                send_image_data(1)
 
         # send keypad value to remote
         send_signal(11, data=[number, self.state])

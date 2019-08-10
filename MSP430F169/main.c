@@ -706,7 +706,7 @@ unsigned char inverse_task4 = 0;
 void task4() {
     unsigned char i = 0;
     unsigned char value = 5;
-    
+
     if (inverse_task4) {
         value = (30 - infrared_detection_counting2) / 5;
     } else {
@@ -750,6 +750,15 @@ void task4() {
     }
 }
 
+// ****************
+
+// Task 5
+
+// ****************
+
+void task5() {
+}
+
 // ***************
 // ****************
 //
@@ -785,44 +794,67 @@ int parameter1 = -1;
 int parameter2 = -1;
 int parameter3 = -1;
 void handle_keypad_key(int number) {
-    if (number < 10) {
-        clean_LCD_menu();
-
-        char text[1];
-        int_to_string(number, text, 1);
-        strcat(input_string, text);
-        print_string(0, 1, input_string);
-    } else if (number == 14 || number == 15) {
-        state += 1;
-        if (state == 0) {
-            int target_number = atoi(input_string);
-            task_number_from_keypad = target_number;
-            strcpy(input_string, "");
-
+    if (number != 10) {
+        if (number < 10) {
             clean_LCD_menu();
-            print_string(0, 1, "Parameter1?");
-        } else if (state == 1) {
-            int target_number = atoi(input_string);
-            parameter1 = target_number;
-            strcpy(input_string, "");
 
-            clean_LCD_menu();
-            print_string(0, 1, "Parameter2?");
-        } else if (state == 2) {
-            int target_number = atoi(input_string);
-            parameter2 = target_number;
-            strcpy(input_string, "");
+            char text[1];
+            int_to_string(number, text, 1);
+            strcat(input_string, text);
+            print_string(0, 1, input_string);
+        } else if (number == 14 || number == 15) {
+            if (strcmp(input_string, "") == 0) {
+                state = -1;
+                strcpy(input_string, "");
+                parameter1 = -1;
+                parameter2 = -1;
+                parameter3 = -1;
 
-            clean_LCD_menu();
-            print_string(0, 1, "Parameter3?");
-        } else if (state == 3) {
-            int target_number = atoi(input_string);
-            parameter3 = target_number;
-            strcpy(input_string, "");
+                clean_LCD_menu();
+                print_string(0, 1, "Which Task?");
+                return;
+            }
+            state += 1;
+            if (state == 0) {
+                int target_number = atoi(input_string);
+                task_number_from_keypad = target_number;
+                strcpy(input_string, "");
 
-            clean_LCD_menu();
-            print_string(0, 1, "Back to menu?");
-        } else {
+                clean_LCD_menu();
+                print_string(0, 1, "Parameter1?");
+            } else if (state == 1) {
+                int target_number = atoi(input_string);
+                parameter1 = target_number;
+                strcpy(input_string, "");
+
+                clean_LCD_menu();
+                print_string(0, 1, "Parameter2?");
+            } else if (state == 2) {
+                int target_number = atoi(input_string);
+                parameter2 = target_number;
+                strcpy(input_string, "");
+
+                clean_LCD_menu();
+                print_string(0, 1, "Parameter3?");
+            } else if (state == 3) {
+                int target_number = atoi(input_string);
+                parameter3 = target_number;
+                strcpy(input_string, "");
+
+                clean_LCD_menu();
+                print_string(0, 1, "Back to menu?");
+            } else {
+                state = -1;
+                strcpy(input_string, "");
+                parameter1 = -1;
+                parameter2 = -1;
+                parameter3 = -1;
+
+                clean_LCD_menu();
+                print_string(0, 1, "Which Task?");
+                return;
+            }
+        } else if (number == 11 || number == 12 || number == 13) {
             state = -1;
             strcpy(input_string, "");
             parameter1 = -1;
@@ -833,16 +865,6 @@ void handle_keypad_key(int number) {
             print_string(0, 1, "Which Task?");
             return;
         }
-    } else if (number == 11 || number == 12 || number == 13) {
-        state = -1;
-        strcpy(input_string, "");
-        parameter1 = -1;
-        parameter2 = -1;
-        parameter3 = -1;
-
-        clean_LCD_menu();
-        print_string(0, 1, "Which Task?");
-        return;
     }
 
     // handle all tasks here
@@ -857,6 +879,28 @@ void handle_keypad_key(int number) {
             char text[20];
             sprintf(text, "%d       %d", parameter2, parameter3);
             print_string(0, 4, text);
+        }
+    }
+
+    if (task_number_from_keypad == 5) {
+        if (parameter3 != -1) {
+            if (an_image_received == 1) {
+                clean_LCD_menu();
+                draw_picture_from_serial();
+                an_image_received = 0;
+            }
+        } else if (parameter2 != -1) {
+            if (an_image_received == 1) {
+                clean_LCD_menu();
+                draw_picture_from_serial();
+                an_image_received = 0;
+            }
+        } else if (parameter1 != -1) {
+            if (an_image_received == 1) {
+                clean_LCD_menu();
+                draw_picture_from_serial();
+                an_image_received = 0;
+            }
         }
     }
 }
@@ -969,6 +1013,7 @@ int main(void) {
                 task4();
                 break;
             case 5:
+                task5();
                 break;
             case 6:
                 break;
