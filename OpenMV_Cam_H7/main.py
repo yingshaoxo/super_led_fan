@@ -9,7 +9,7 @@ from pyb import LED
 from utime import sleep_ms
 
 
-DEBUG = 10
+DEBUG = 1
 
 
 sensor.reset()
@@ -40,11 +40,13 @@ increase the accuracy:
 1. auto change paramater: by putting a black cycle at the right-bottom corner, you change the paramater automatically to get the preset pixels of that black cycle
 2. get multiple picture, then add or merge them together
 """
-width = 90
-height = 120
+width = 96
+height = 128
+#width = 94
+#height = 126
 sub_image_number_in_one_axis = 16
-black_color_representation = 9
-white_color_representation = 10
+black_color_representation = 10
+white_color_representation = 9
 
 
 def get_sub_image_paramaters():
@@ -101,11 +103,11 @@ def detect_all_sub_image(an_image):
         for xi in range(sub_image_number_in_one_axis):
             crop_paramater = sub_image_crop_paramater_list[yi][xi]
             sub_image = an_image.copy(roi=crop_paramater)
-            blobs = sub_image.find_blobs([(69, 100, -128, 127, -128, 127)])
+            blobs = sub_image.find_blobs([(49, 100, -128, 127, -128, 127)], x_stride=1, y_stride=1, area_threshold=25, pixels_threshold=25)
             # blobs = sub_image.find_blobs([(185, 255)])  # 156,255
             true_or_false = white_color_representation
             for blob in blobs:
-                if blob.pixels() > 5:
+                if blob.pixels() > 15:
                     true_or_false = black_color_representation
             detected_point_list.append(true_or_false)
 
@@ -565,7 +567,7 @@ class Keypad():
                 self.input_string = ""
                 self.paramater_list = [-1, -1, -1]
                 self.task_number_from_keypad = 0
-        
+
 
         print("number:", number, "state:", self.state, "string:", self.input_string)
         print("task:", self.task_number_from_keypad, "p:", self.paramater_list)
@@ -583,7 +585,7 @@ class Keypad():
                 if (image_data1 == []):
                     capture_image_data(1)
                 send_image_data(1)
-        
+
         if (self.task_number_from_keypad == 6):
             if (self.paramater_list[2] != -1):
                 send_image_data(3)
@@ -607,15 +609,14 @@ keypad = Keypad()
 
 while(True):
     clock.tick()
-    #img = sensor.snapshot().lens_corr(1.8)
 
     keypad.catch_keypad_input()
 
     if DEBUG == 1:
-        detect_all_sub_image(img)
-        img = print_out_detected_points(img)
+        img = sensor.snapshot().lens_corr(2)
+        #detect_all_sub_image(img)
+        #img = print_out_detected_points(img)
 
-        send_signal(8, data=detected_point_list)
 
     #print("FPS %f" % clock.fps())
     gc.mem_free()
