@@ -514,7 +514,7 @@ class Keypad():
         print("number:", number, "state:", self.state, "string:", self.input_string)
         print("task:", self.task_number_from_keypad, "p:", self.paramater_list)
 
-        if (self.task_number_from_keypad == 5):
+        if (self.task_number_from_keypad == 5 or self.task_number_from_keypad == 6):
             if (self.paramater_list[2] == 3):
                 if (image_data3 == []):
                     capture_image_data(3)

@@ -630,41 +630,6 @@ void task2() {
 
 // ****************
 
-unsigned char point_square[32] = {
-    0x00,
-    0x08,
-    0x10,
-    0x40,
-    0x60,
-    0x10,
-    0x08,
-    0x04,
-    0x02,
-    0x02,
-    0x01,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x80,
-    0x80,
-    0xA0,
-    0x9c,
-    0x83,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x00,
-    0x80,
-    0x40,
-    0x26,
-    0x19,
-    0x00,
-};
-
 void task3() {
     unsigned char i = 0;
     for (i = 0; i < 16; i++) {
@@ -757,6 +722,19 @@ void task4() {
 // ****************
 
 void task5() {
+}
+
+// ****************
+
+// Task 6
+
+// ****************
+
+unsigned char point_square[96] = {0};
+unsigned char Idex = 0;
+int dnum;
+int show_task6 = 0;
+void task6() {
 }
 
 // ***************
@@ -903,6 +881,61 @@ void handle_keypad_key(int number) {
             }
         }
     }
+
+    if (task_number_from_keypad == 6) {
+        if (parameter3 != -1) {
+            if (an_image_received == 1) {
+                for (dnum = 0; dnum < 256; dnum++) {
+                    if (dnum < 128) {
+                        Idex = 0 + 32*3;
+                    } else {
+                        Idex = 16 + 32*3;
+                    }
+                    if (an_image[dnum] == 1) {
+                        point_square[Idex + dnum%16] |= (0x80>>(dnum/16));
+                    } else {
+                        point_square[Idex + dnum%16] &= ~(0x80>>(dnum/16));
+                    }
+                }
+                show_task6 = 1;
+                an_image_received = 0;
+            }
+        } else if (parameter2 != -1) {
+            if (an_image_received == 1) {
+                for (dnum = 0; dnum < 256; dnum++) {
+                    if (dnum < 128) {
+                        Idex = 0 + 32*2;
+                    } else {
+                        Idex = 16 + 32*2;
+                    }
+                    if (an_image[dnum] == 1) {
+                        point_square[Idex + dnum%16] |= (0x80>>(dnum/16));
+                    } else {
+                        point_square[Idex + dnum%16] &= ~(0x80>>(dnum/16));
+                    }
+                }
+                an_image_received = 0;
+            }
+        } else if (parameter1 != -1) {
+            if (an_image_received == 1) {
+                for (dnum = 0; dnum < 256; dnum++) {
+                    if (dnum < 128) {
+                        Idex = 0 + 32*1;
+                    } else {
+                        Idex = 16 + 32*1;
+                    }
+                    if (an_image[dnum] == 1) {
+                        point_square[Idex + dnum%16] |= (0x80>>(dnum/16));
+                    } else {
+                        point_square[Idex + dnum%16] &= ~(0x80>>(dnum/16));
+                    }
+                }
+                an_image_received = 0;
+            }
+        }
+    } else { // if not task 6
+        show_task6 = 0;
+    }
 }
 
 #pragma vector = USART0RX_VECTOR
@@ -974,26 +1007,6 @@ int main(void) {
 
     print_string(0, 1, "Which Task?");
     while (1) {
-        //int i = 0;
-        //task_number_from_keypad = 3;
-        //print_number(0, 1, TASK_NUMBER);
-        //print_number(0, 2, an_image_received);
-        //print_number(0, 3, image_index);
-        //print_number(0, 4, STATE_FROM_SERIAL);
-        ////print_number(0, 4, i);
-        //millisecond_of_delay(500);
-        //screen_clean();
-
-        //i++;
-        //if (i > 50) {
-        //    i = 0;
-        //}
-
-        //if (an_image_received == 1) {
-        //    draw_picture_from_serial();
-
-        //    an_image_received = 0;
-        //}
         if (enter_pin_interrupt == 1) {
             switch (task_number_from_keypad) {
             case 0:
