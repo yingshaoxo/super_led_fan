@@ -455,26 +455,6 @@ unsigned long int temporary_accumulated_T;
 unsigned long int infrared_detection_counting = 0;
 unsigned long int the_average_T = 0;                         //T
 unsigned long int the_time_during_one_part_of_240_parts = 0; //T1
-#pragma vector = PORT1_VECTOR
-__interrupt void Port_1(void) {
-    if (P1IFG & echo_pin) // is that interrupt request come from echo_pin? is there an rising or falling edge has been detected? Each PxIFGx bit is the interrupt flag for its corresponding I/O pin and is set when the selected input signal edge occurs at the pin.
-    {
-        if (P1IES & echo_pin) // is this the falling edge? (P1IES & echo_pin) == 1
-        {
-            if (infrared_detection_counting > 9) {
-                temporary_accumulated_T += TB0R; // TBR is a us time unit at this case; may have error if change happens too fast; use array is a sulution
-            }
-            infrared_detection_counting++;
-            if (infrared_detection_counting >= 19) {
-                the_average_T = temporary_accumulated_T / 10;
-                the_time_during_one_part_of_240_parts = the_average_T / 240;
-                infrared_detection_counting == 0;
-            }
-            TB0CCR0 = 50000; // start to increase TBR microseconds
-        }
-        P1IFG &= ~echo_pin; // clear flag, so it can start to detect new rising or falling edge, then a new call to this interrupt function will be allowed.
-    }
-}
 
 #pragma vector = TIMER0_B0_VECTOR
 __interrupt void Timer_B(void) {
@@ -502,14 +482,6 @@ __interrupt void Timer_B(void) {
 
 #define enable_lower_green_chip P6OUT |= BIT0
 #define disable_lower_green_chip P6OUT &= ~BIT0
-
-void initialize_16_rows_LED() {
-    P5DIR |= (BIT0 | BIT1 | BIT2 | BIT3 | BIT4 | BIT5 | BIT6 | BIT7); // set Port 5 as output
-    P6DIR |= (BIT0 | BIT1 | BIT2 | BIT3);                             // set P6.0-P6.3 as output
-
-    P5OUT &= ~(BIT0 | BIT1 | BIT2 | BIT3 | BIT4 | BIT5 | BIT6 | BIT7); // set Port 5 to low
-    P6OUT &= ~(BIT0 | BIT1 | BIT2 | BIT3);                             // set P6.0-P6.3 to low
-}
 
 unsigned char int_to_led_hex(int number) {
     if (number > 8) {
@@ -568,10 +540,30 @@ void turn_off_all_leds() {
     set_second_8_red_leds(0x00);
 }
 
-void delay_for_leds(unsigned long int length) {
-    while (length--) {
+void delay_for_leds(unsigned char length) {
+    //unsigned long t1 = the_time_during_one_part_of_240_parts;
 
+    //while (length--) {
+    //    while (t1--) {
+    //    }
+    //}
+
+    while (length--) {
+        millisecond_of_delay(1);
     }
+}
+
+void initialize_16_rows_LED() {
+    P5DIR |= (BIT0 | BIT1 | BIT2 | BIT3 | BIT4 | BIT5 | BIT6 | BIT7); // set Port 5 as output
+    P6DIR |= (BIT0 | BIT1 | BIT2 | BIT3);                             // set P6.0-P6.3 as output
+
+    P5OUT &= ~(BIT0 | BIT1 | BIT2 | BIT3 | BIT4 | BIT5 | BIT6 | BIT7); // set Port 5 to low
+    P6OUT &= ~(BIT0 | BIT1 | BIT2 | BIT3);                             // set P6.0-P6.3 to low
+
+    set_first_8_green_leds(0xff);
+    set_second_8_red_leds(0xff);
+    millisecond_of_delay(5000);
+    turn_off_all_leds();
 }
 
 // ****************
@@ -617,32 +609,55 @@ void task2() {
 
 // ****************
 
+unsigned char point_square[32] = {
+    0x00,
+    0x08,
+    0x10,
+    0x40,
+    0x60,
+    0x10,
+    0x08,
+    0x04,
+    0x02,
+    0x02,
+    0x01,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x80,
+    0x80,
+    0xA0,
+    0x9c,
+    0x83,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x00,
+    0x80,
+    0x40,
+    0x26,
+    0x19,
+    0x00,
+};
+
 void task3() {
-    //the_time_during_one_part_of_240_parts = 1000; //T1
+    unsigned char idx = 0, i = 0;
+    for (i = 0; i < 16; i++) {
+        set_first_8_red_leds(point_square[idx]);
+        set_second_8_red_leds(point_square[idx + 16]);
+        delay_for_leds(3);
+        set_first_8_green_leds(point_square[idx]);
+        set_second_8_green_leds(point_square[idx + 16]);
+        delay_for_leds(2);
 
-    int i, ii;
-    for (i = 0; i < 2; i++) {
-        for (ii = 0; ii < 16; ii++) {
-            set_first_8_red_leds(0xff);
-            set_second_8_red_leds(0xff);
-            delay_for_leds((4 / 3) * the_time_during_one_part_of_240_parts);
-            set_first_8_red_leds(0x00);
-            set_second_8_red_leds(0x00);
-            delay_for_leds(((4 / 3) * the_time_during_one_part_of_240_parts) / 10);
-        }
-        for (ii = 0; ii < 4; ii++) {
-            set_first_8_red_leds(0x00);
-            set_second_8_red_leds(0x00);
-            delay_for_leds((4 / 3) * the_time_during_one_part_of_240_parts);
-            set_first_8_red_leds(0xff);
-            set_second_8_red_leds(0xff);
-            delay_for_leds(((4 / 3) * the_time_during_one_part_of_240_parts) / 10);
-        }
+        delay_for_leds(6);
+        idx++;
     }
-
-    set_first_8_red_leds(0x00);
-    set_second_8_red_leds(0x00);
-    delay_for_leds((80 / 3 * the_time_during_one_part_of_240_parts) * 7);
+    turn_off_all_leds();
 }
 
 // ****************
@@ -652,72 +667,6 @@ void task3() {
 // ****************
 
 void task4() {
-    int delay_length = 2000;
-
-    int times;
-    int i, ii;
-    for (times = 0; times > 3; times++) {
-        for (i = 0; i < 2; i++) {
-            for (ii = 0; ii < 16; ii++) {
-                set_first_8_red_leds(0xff);
-                set_second_8_red_leds(0xff);
-                delay_for_leds(4 / 3 * the_time_during_one_part_of_240_parts);
-                set_first_8_red_leds(0x00);
-                set_second_8_red_leds(0x00);
-                delay_for_leds(4 / 3 * the_time_during_one_part_of_240_parts / 10);
-            }
-            for (ii = 0; ii < 4; ii++) {
-                set_first_8_red_leds(0x00);
-                set_second_8_red_leds(0x00);
-                delay_for_leds(4 / 3 * the_time_during_one_part_of_240_parts);
-                set_first_8_red_leds(0xff);
-                set_second_8_red_leds(0xff);
-                delay_for_leds(4 / 3 * the_time_during_one_part_of_240_parts / 10);
-            }
-        }
-
-        millisecond_of_delay(delay_length);
-
-        for (i = 0; i < 2; i++) {
-            for (ii = 0; ii < 16; ii++) {
-                set_first_8_red_leds(0xff);
-                set_second_8_red_leds(0xff);
-                delay_for_leds(((4 / 3) * the_time_during_one_part_of_240_parts) * 1.2);
-                set_first_8_red_leds(0x00);
-                set_second_8_red_leds(0x00);
-                delay_for_leds(((4 / 3) * the_time_during_one_part_of_240_parts) / 10 * 1.2);
-            }
-            for (ii = 0; ii < 4; ii++) {
-                set_first_8_red_leds(0x00);
-                set_second_8_red_leds(0x00);
-                delay_for_leds(((4 / 3) * the_time_during_one_part_of_240_parts) * 1.2);
-                set_first_8_red_leds(0xff);
-                set_second_8_red_leds(0xff);
-                delay_for_leds(((4 / 3) * the_time_during_one_part_of_240_parts) / 10 * 1.2);
-            }
-        }
-
-        millisecond_of_delay(delay_length);
-
-        for (i = 0; i < 2; i++) {
-            for (ii = 0; ii < 16; ii++) {
-                set_first_8_red_leds(0xff);
-                set_second_8_red_leds(0xff);
-                delay_for_leds(((4 / 3) * the_time_during_one_part_of_240_parts) * 0.7);
-                set_first_8_red_leds(0x00);
-                set_second_8_red_leds(0x00);
-                delay_for_leds(((4 / 3) * the_time_during_one_part_of_240_parts) / 10 * 0.7);
-            }
-            for (ii = 0; ii < 4; ii++) {
-                set_first_8_red_leds(0x00);
-                set_second_8_red_leds(0x00);
-                delay_for_leds(((4 / 3) * the_time_during_one_part_of_240_parts) * 0.7);
-                set_first_8_red_leds(0xff);
-                set_second_8_red_leds(0xff);
-                delay_for_leds(((4 / 3) * the_time_during_one_part_of_240_parts) / 10 * 0.7);
-            }
-        }
-    }
 }
 
 // ***************
@@ -890,18 +839,64 @@ __interrupt void usart0_rx(void) {
     }
 }
 
+#pragma vector = PORT1_VECTOR
+__interrupt void Port_1(void) {
+    if (P1IFG & echo_pin) // is that interrupt request come from echo_pin? is there an rising or falling edge has been detected? Each PxIFGx bit is the interrupt flag for its corresponding I/O pin and is set when the selected input signal edge occurs at the pin.
+    {
+        if (P1IES & echo_pin) // is this the falling edge? (P1IES & echo_pin) == 1
+        {
+            if (infrared_detection_counting > 9) {
+                temporary_accumulated_T += TB0R; // TBR is a us time unit at this case; may have error if change happens too fast; use array is a sulution
+            }
+            infrared_detection_counting++;
+            if (infrared_detection_counting > 19) {
+                the_average_T = temporary_accumulated_T / 10;
+                the_time_during_one_part_of_240_parts = the_average_T / 240;
+                infrared_detection_counting = 10;
+            }
+            TB0CCR0 = 50000; // start to increase TBR microseconds
+            switch (task_number_from_keypad) {
+            case 0:
+                break;
+            case 1:
+                if (parameter1 != -1 && parameter2 != -1) {
+                    task1(parameter1, parameter2);
+                }
+                break;
+            case 2:
+                task2();
+                break;
+            case 3:
+                task3();
+                break;
+            case 4:
+                break;
+            case 5:
+                break;
+            case 6:
+                break;
+            case 7:
+                break;
+            default:
+                break;
+            }
+        }
+        P1IFG &= ~echo_pin; // clear flag, so it can start to detect new rising or falling edge, then a new call to this interrupt function will be allowed.
+    }
+}
+
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD; // stop watchdog timer
 
     initialize_LCD();
     initialize_serial_communication();
-    //initialize_infrared_sensor();
+    initialize_infrared_sensor();
     initialize_16_rows_LED();
 
     print_string(0, 1, "Which Task?");
-    //int i = 0;
-    //task_number_from_keypad = 3;
     while (1) {
+        //int i = 0;
+        //task_number_from_keypad = 3;
         //print_number(0, 1, TASK_NUMBER);
         //print_number(0, 2, an_image_received);
         //print_number(0, 3, image_index);
@@ -920,32 +915,6 @@ int main(void) {
 
         //    an_image_received = 0;
         //}
-
-        switch (task_number_from_keypad) {
-        case 0:
-            break;
-        case 1:
-            if (parameter1 != -1 && parameter2 != -1) {
-                task1(parameter1, parameter2);
-            }
-            break;
-        case 2:
-            task2();
-            break;
-        case 3:
-            task3();
-            break;
-        case 4:
-            break;
-        case 5:
-            break;
-        case 6:
-            break;
-        case 7:
-            break;
-        default:
-            break;
-        }
     }
 
     return 0;
