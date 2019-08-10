@@ -491,17 +491,17 @@ __interrupt void Timer_B(void) {
 // ***************
 // ****************
 
-#define enable_led_chip_1 P6OUT |= BIT0
-#define disable_led_chip_1 P6OUT &= ~BIT0
+#define enable_upper_red_chip P6OUT |= BIT3
+#define disable_upper_red_chip P6OUT &= ~BIT3
 
-#define enable_led_chip_2 P6OUT |= BIT1
-#define disable_led_chip_2 P6OUT &= ~BIT1
+#define enable_upper_green_chip P6OUT |= BIT1
+#define disable_upper_green_chip P6OUT &= ~BIT1
 
-#define enable_led_chip_3 P6OUT |= BIT2
-#define disable_led_chip_3 P6OUT &= ~BIT2
+#define enable_lower_red_chip P6OUT |= BIT2
+#define disable_lower_red_chip P6OUT &= ~BIT2
 
-#define enable_led_chip_4 P6OUT |= BIT3
-#define disable_led_chip_4 P6OUT &= ~BIT3
+#define enable_lower_green_chip P6OUT |= BIT0
+#define disable_lower_green_chip P6OUT &= ~BIT0
 
 void initialize_16_rows_LED() {
     P5DIR |= (BIT0 | BIT1 | BIT2 | BIT3 | BIT4 | BIT5 | BIT6 | BIT7); // set Port 5 as output
@@ -512,54 +512,66 @@ void initialize_16_rows_LED() {
 }
 
 unsigned char int_to_led_hex(int number) {
+    if (number > 8) {
+        number = number - 8;
+    }
     switch (number) {
-    case 0:
-        return 0x80;
     case 1:
-        return 0x40;
+        return 0x01;
     case 2:
-        return 0x20;
+        return 0x02;
     case 3:
-        return 0x10;
+        return 0x04;
     case 4:
         return 0x08;
     case 5:
-        return 0x04;
+        return 0x10;
     case 6:
-        return 0x02;
+        return 0x20;
     case 7:
-        return 0x01;
+        return 0x40;
+    case 8:
+        return 0x80;
     default:
         return 0x00;
     }
 }
 
 void set_first_8_red_leds(unsigned char byte_data) {
-    enable_led_chip_1;
+    enable_upper_red_chip;
     P5OUT = byte_data;
-    disable_led_chip_1;
+    disable_upper_red_chip;
 }
 
 void set_first_8_green_leds(unsigned char byte_data) {
-    enable_led_chip_2;
+    enable_upper_green_chip;
     P5OUT = byte_data;
-    disable_led_chip_1;
+    disable_upper_green_chip;
 }
 
 void set_second_8_red_leds(unsigned char byte_data) {
-    enable_led_chip_3;
+    enable_lower_red_chip;
     P5OUT = byte_data;
-    disable_led_chip_1;
+    disable_lower_red_chip;
 }
 
 void set_second_8_green_leds(unsigned char byte_data) {
-    enable_led_chip_4;
+    enable_lower_green_chip;
     P5OUT = byte_data;
-    disable_led_chip_1;
+    disable_lower_green_chip;
 }
 
 void turn_off_all_leds() {
-    P5OUT = 0x00;
+    set_first_8_green_leds(0x00);
+    set_first_8_red_leds(0x00);
+    set_second_8_green_leds(0x00);
+    set_second_8_red_leds(0x00);
+}
+
+void delay_for_leds(unsigned long int length) {
+    while (length--) {
+
+    }
 }
 
 // ****************
@@ -568,16 +580,18 @@ void turn_off_all_leds() {
 
 // ****************
 
-void task_1(row_1, row_2) {
-    // the number is between 0 and 15
-    if ((row_1 < 8) && (row_2 < 8)) {
+void task1(row_1, row_2) {
+    // the number is between 1 and 16
+    //turn_off_all_leds();
+
+    if ((row_1 < 9) && (row_2 < 9)) {
         set_first_8_red_leds(int_to_led_hex(row_1) | int_to_led_hex(row_2));
-    } else if ((row_1 > 7) && (row_2 > 7)) {
+    } else if ((row_1 > 8) && (row_2 > 8)) {
         set_second_8_red_leds(int_to_led_hex(row_1) | int_to_led_hex(row_2));
-    } else if ((row_1 < 8) && (row_2 > 7)) {
+    } else if ((row_1 < 9) && (row_2 > 8)) {
         set_first_8_red_leds(int_to_led_hex(row_1));
         set_second_8_red_leds(int_to_led_hex(row_2));
-    } else if ((row_1 > 7) && (row_2 < 8)) {
+    } else if ((row_1 > 8) && (row_2 < 9)) {
         set_second_8_red_leds(int_to_led_hex(row_1));
         set_first_8_red_leds(int_to_led_hex(row_2));
     }
@@ -589,9 +603,121 @@ void task_1(row_1, row_2) {
 
 // ****************
 
-void task_2() {
-    // the number is between 0 and 15
-    set_first_8_red_leds(0xff);
+void task2() {
+    int i;
+    for (i = 1; i < 17; i++) {
+        task1(i + 1, 16 - i);
+        millisecond_of_delay(1000);
+    }
+}
+
+// ****************
+
+// Task 3
+
+// ****************
+
+void task3() {
+    //the_time_during_one_part_of_240_parts = 1000; //T1
+
+    int i, ii;
+    for (i = 0; i < 2; i++) {
+        for (ii = 0; ii < 16; ii++) {
+            set_first_8_red_leds(0xff);
+            set_second_8_red_leds(0xff);
+            delay_for_leds((4 / 3) * the_time_during_one_part_of_240_parts);
+            set_first_8_red_leds(0x00);
+            set_second_8_red_leds(0x00);
+            delay_for_leds(((4 / 3) * the_time_during_one_part_of_240_parts) / 10);
+        }
+        for (ii = 0; ii < 4; ii++) {
+            set_first_8_red_leds(0x00);
+            set_second_8_red_leds(0x00);
+            delay_for_leds((4 / 3) * the_time_during_one_part_of_240_parts);
+            set_first_8_red_leds(0xff);
+            set_second_8_red_leds(0xff);
+            delay_for_leds(((4 / 3) * the_time_during_one_part_of_240_parts) / 10);
+        }
+    }
+
+    set_first_8_red_leds(0x00);
+    set_second_8_red_leds(0x00);
+    delay_for_leds((80 / 3 * the_time_during_one_part_of_240_parts) * 7);
+}
+
+// ****************
+
+// Task 4
+
+// ****************
+
+void task4() {
+    int delay_length = 2000;
+
+    int times;
+    int i, ii;
+    for (times = 0; times > 3; times++) {
+        for (i = 0; i < 2; i++) {
+            for (ii = 0; ii < 16; ii++) {
+                set_first_8_red_leds(0xff);
+                set_second_8_red_leds(0xff);
+                delay_for_leds(4 / 3 * the_time_during_one_part_of_240_parts);
+                set_first_8_red_leds(0x00);
+                set_second_8_red_leds(0x00);
+                delay_for_leds(4 / 3 * the_time_during_one_part_of_240_parts / 10);
+            }
+            for (ii = 0; ii < 4; ii++) {
+                set_first_8_red_leds(0x00);
+                set_second_8_red_leds(0x00);
+                delay_for_leds(4 / 3 * the_time_during_one_part_of_240_parts);
+                set_first_8_red_leds(0xff);
+                set_second_8_red_leds(0xff);
+                delay_for_leds(4 / 3 * the_time_during_one_part_of_240_parts / 10);
+            }
+        }
+
+        millisecond_of_delay(delay_length);
+
+        for (i = 0; i < 2; i++) {
+            for (ii = 0; ii < 16; ii++) {
+                set_first_8_red_leds(0xff);
+                set_second_8_red_leds(0xff);
+                delay_for_leds(((4 / 3) * the_time_during_one_part_of_240_parts) * 1.2);
+                set_first_8_red_leds(0x00);
+                set_second_8_red_leds(0x00);
+                delay_for_leds(((4 / 3) * the_time_during_one_part_of_240_parts) / 10 * 1.2);
+            }
+            for (ii = 0; ii < 4; ii++) {
+                set_first_8_red_leds(0x00);
+                set_second_8_red_leds(0x00);
+                delay_for_leds(((4 / 3) * the_time_during_one_part_of_240_parts) * 1.2);
+                set_first_8_red_leds(0xff);
+                set_second_8_red_leds(0xff);
+                delay_for_leds(((4 / 3) * the_time_during_one_part_of_240_parts) / 10 * 1.2);
+            }
+        }
+
+        millisecond_of_delay(delay_length);
+
+        for (i = 0; i < 2; i++) {
+            for (ii = 0; ii < 16; ii++) {
+                set_first_8_red_leds(0xff);
+                set_second_8_red_leds(0xff);
+                delay_for_leds(((4 / 3) * the_time_during_one_part_of_240_parts) * 0.7);
+                set_first_8_red_leds(0x00);
+                set_second_8_red_leds(0x00);
+                delay_for_leds(((4 / 3) * the_time_during_one_part_of_240_parts) / 10 * 0.7);
+            }
+            for (ii = 0; ii < 4; ii++) {
+                set_first_8_red_leds(0x00);
+                set_second_8_red_leds(0x00);
+                delay_for_leds(((4 / 3) * the_time_during_one_part_of_240_parts) * 0.7);
+                set_first_8_red_leds(0xff);
+                set_second_8_red_leds(0xff);
+                delay_for_leds(((4 / 3) * the_time_during_one_part_of_240_parts) / 10 * 0.7);
+            }
+        }
+    }
 }
 
 // ***************
@@ -769,10 +895,12 @@ int main(void) {
 
     initialize_LCD();
     initialize_serial_communication();
-    initialize_infrared_sensor();
+    //initialize_infrared_sensor();
+    initialize_16_rows_LED();
 
     print_string(0, 1, "Which Task?");
     //int i = 0;
+    //task_number_from_keypad = 3;
     while (1) {
         //print_number(0, 1, TASK_NUMBER);
         //print_number(0, 2, an_image_received);
@@ -797,12 +925,15 @@ int main(void) {
         case 0:
             break;
         case 1:
-            task_1();
+            if (parameter1 != -1 && parameter2 != -1) {
+                task1(parameter1, parameter2);
+            }
             break;
         case 2:
-            task_1();
+            task2();
             break;
         case 3:
+            task3();
             break;
         case 4:
             break;
