@@ -348,7 +348,25 @@ unsigned int TASK_NUMBER = 0;
 unsigned int data_arraving = 0;
 unsigned int data_index = 0;
 
-unsigned int an_image[257];
+//unsigned char an_image[257];
+unsigned char an_image[256] = {
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+};
 unsigned int image_index = 0;
 unsigned int an_image_received = 0;
 
@@ -730,11 +748,63 @@ void task5() {
 
 // ****************
 
-unsigned char point_square[96] = {0};
+unsigned char point_square[96];
 unsigned char Idex = 0;
-int dnum;
+unsigned int dnum;
 int show_task6 = 0;
 void task6() {
+    if (show_task6 == 1) {
+        unsigned char i, index = 0;
+
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(point_square[index]);
+            set_second_8_red_leds(point_square[index + 16]);
+            delay_for_leds(3);
+            set_first_8_green_leds(0x00);
+            set_second_8_green_leds(0x00);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+        delay_for_leds(44);
+
+        index = 32;
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(point_square[index]);
+            set_second_8_red_leds(point_square[index + 16]);
+            delay_for_leds(3);
+            set_first_8_green_leds(0x00);
+            set_second_8_green_leds(0x00);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+        delay_for_leds(44);
+
+        index = 64;
+        for (i = 0; i < 16; i++) {
+            set_first_8_red_leds(point_square[index]);
+            set_second_8_red_leds(point_square[index + 16]);
+            delay_for_leds(3);
+            set_first_8_green_leds(0x00);
+            set_second_8_green_leds(0x00);
+            delay_for_leds(2);
+
+            delay_for_leds(3);
+            turn_off_all_leds();
+            delay_for_leds(3);
+
+            index++;
+        }
+    }
 }
 
 // ***************
@@ -887,14 +957,14 @@ void handle_keypad_key(int number) {
             if (an_image_received == 1) {
                 for (dnum = 0; dnum < 256; dnum++) {
                     if (dnum < 128) {
-                        Idex = 0 + 32*3;
+                        Idex = 0 + 32 * 2;
                     } else {
-                        Idex = 16 + 32*3;
+                        Idex = 16 + 32 * 2;
                     }
                     if (an_image[dnum] == 1) {
-                        point_square[Idex + dnum%16] |= (0x80>>(dnum/16));
+                        point_square[Idex + dnum % 16] |= (0x80 >> ((dnum / 16) % 8));
                     } else {
-                        point_square[Idex + dnum%16] &= ~(0x80>>(dnum/16));
+                        point_square[Idex + dnum % 16] &= ~(0x80 >> ((dnum / 16) % 8));
                     }
                 }
                 show_task6 = 1;
@@ -904,14 +974,14 @@ void handle_keypad_key(int number) {
             if (an_image_received == 1) {
                 for (dnum = 0; dnum < 256; dnum++) {
                     if (dnum < 128) {
-                        Idex = 0 + 32*2;
+                        Idex = 0 + 32 * 1;
                     } else {
-                        Idex = 16 + 32*2;
+                        Idex = 16 + 32 * 1;
                     }
                     if (an_image[dnum] == 1) {
-                        point_square[Idex + dnum%16] |= (0x80>>(dnum/16));
+                        point_square[Idex + dnum % 16] |= (0x80 >> ((dnum / 16) % 8));
                     } else {
-                        point_square[Idex + dnum%16] &= ~(0x80>>(dnum/16));
+                        point_square[Idex + dnum % 16] &= ~(0x80 >> ((dnum / 16) % 8));
                     }
                 }
                 an_image_received = 0;
@@ -920,21 +990,19 @@ void handle_keypad_key(int number) {
             if (an_image_received == 1) {
                 for (dnum = 0; dnum < 256; dnum++) {
                     if (dnum < 128) {
-                        Idex = 0 + 32*1;
+                        Idex = 0 + 32 * 0;
                     } else {
-                        Idex = 16 + 32*1;
+                        Idex = 16 + 32 * 0;
                     }
                     if (an_image[dnum] == 1) {
-                        point_square[Idex + dnum%16] |= (0x80>>(dnum/16));
+                        point_square[Idex + dnum % 16] |= (0x80 >> ((dnum / 16) % 8));
                     } else {
-                        point_square[Idex + dnum%16] &= ~(0x80>>(dnum/16));
+                        point_square[Idex + dnum % 16] &= ~(0x80 >> ((dnum / 16) % 8));
                     }
                 }
                 an_image_received = 0;
             }
         }
-    } else { // if not task 6
-        show_task6 = 0;
     }
 }
 
@@ -1006,6 +1074,7 @@ int main(void) {
     initialize_16_rows_LED();
 
     print_string(0, 1, "Which Task?");
+
     while (1) {
         if (enter_pin_interrupt == 1) {
             switch (task_number_from_keypad) {
@@ -1029,6 +1098,7 @@ int main(void) {
                 task5();
                 break;
             case 6:
+                task6();
                 break;
             case 7:
                 break;
@@ -1038,6 +1108,4 @@ int main(void) {
             enter_pin_interrupt = 0;
         }
     }
-
-    return 0;
 }

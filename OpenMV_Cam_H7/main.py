@@ -217,6 +217,62 @@ def send_signal(task_number, data=None, picture_index=1):
 image_data1 = []
 image_data2 = []
 image_data3 = []
+#image_data1 = [
+#    9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+#    9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+#    9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+#    9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+#    9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+#    9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+#    9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+#    9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+#    9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+#    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+#    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+#    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+#    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+#    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+#    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+#    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+#    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+#    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+#]
+#image_data2 = [
+#    9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,
+#]
+#image_data3 = [
+#    9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+#    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+#    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+#    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+#    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+#    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+#    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+#    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+#    9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+#    10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+#]
 
 def capture_image_data(index_of_image):
     global image_data1
@@ -317,7 +373,7 @@ class Keypad():
         if (not self.input_of_row1()):
             self.set_column1_to_1()
             if (self.input_of_row1()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(800)
                 if (self.input_of_row1()):
                     # self.handle_keypad_number(1)
                     self.set_column1_to_0()
@@ -326,7 +382,7 @@ class Keypad():
 
             self.set_column2_to_1()
             if (self.input_of_row1()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(800)
                 if (self.input_of_row1()):
                     self.handle_keypad_number(0)
                     self.set_column2_to_0()
@@ -335,7 +391,7 @@ class Keypad():
 
             self.set_column3_to_1()
             if (self.input_of_row1()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(800)
                 if (self.input_of_row1()):
                     self.handle_keypad_number(10)
                     self.set_column3_to_0()
@@ -344,7 +400,7 @@ class Keypad():
 
             self.set_column4_to_1()
             if (self.input_of_row1()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(800)
                 if (self.input_of_row1()):
                     self.handle_keypad_number(14)
                     self.set_column4_to_0()
@@ -354,7 +410,7 @@ class Keypad():
         elif (not self.input_of_row2()):
             self.set_column1_to_1()
             if (self.input_of_row2()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(800)
                 if (self.input_of_row2()):
                     self.handle_keypad_number(7)
                     self.set_column1_to_0()
@@ -363,7 +419,7 @@ class Keypad():
 
             self.set_column2_to_1()
             if (self.input_of_row2()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(800)
                 if (self.input_of_row2()):
                     self.handle_keypad_number(8)
                     self.set_column2_to_0()
@@ -372,7 +428,7 @@ class Keypad():
 
             self.set_column3_to_1()
             if (self.input_of_row2()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(800)
                 if (self.input_of_row2()):
                     self.handle_keypad_number(9)
                     self.set_column3_to_0()
@@ -381,7 +437,7 @@ class Keypad():
 
             self.set_column4_to_1()
             if (self.input_of_row2()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(800)
                 if (self.input_of_row2()):
                     self.handle_keypad_number(13)
                     self.set_column4_to_0()
@@ -391,7 +447,7 @@ class Keypad():
         elif (not self.input_of_row3()):
             self.set_column1_to_1()
             if (self.input_of_row3()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(800)
                 if (self.input_of_row3()):
                     self.handle_keypad_number(4)
                     self.set_column1_to_0()
@@ -400,7 +456,7 @@ class Keypad():
 
             self.set_column2_to_1()
             if (self.input_of_row3()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(800)
                 if (self.input_of_row3()):
                     self.handle_keypad_number(5)
                     self.set_column2_to_0()
@@ -409,7 +465,7 @@ class Keypad():
 
             self.set_column3_to_1()
             if (self.input_of_row3()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(800)
                 if (self.input_of_row3()):
                     self.handle_keypad_number(6)
                     self.set_column3_to_0()
@@ -418,7 +474,7 @@ class Keypad():
 
             self.set_column4_to_1()
             if (self.input_of_row3()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(800)
                 if (self.input_of_row3()):
                     self.handle_keypad_number(12)
                     self.set_column4_to_0()
@@ -428,7 +484,7 @@ class Keypad():
         elif (not self.input_of_row4()):
             self.set_column1_to_1()
             if (self.input_of_row4()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(800)
                 if (self.input_of_row4()):
                     self.handle_keypad_number(1)
                     self.set_column1_to_0()
@@ -437,7 +493,7 @@ class Keypad():
 
             self.set_column2_to_1()
             if (self.input_of_row4()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(800)
                 if (self.input_of_row4()):
                     self.handle_keypad_number(2)
                     self.set_column2_to_0()
@@ -446,7 +502,7 @@ class Keypad():
 
             self.set_column3_to_1()
             if (self.input_of_row4()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(800)
                 if (self.input_of_row4()):
                     self.handle_keypad_number(3)
                     self.set_column3_to_0()
@@ -455,7 +511,7 @@ class Keypad():
 
             self.set_column4_to_1()
             if (self.input_of_row4()):
-                self.millisecond_of_delay(300)
+                self.millisecond_of_delay(800)
                 if (self.input_of_row4()):
                     self.handle_keypad_number(11)
                     self.set_column4_to_0()
@@ -514,18 +570,26 @@ class Keypad():
         print("number:", number, "state:", self.state, "string:", self.input_string)
         print("task:", self.task_number_from_keypad, "p:", self.paramater_list)
 
-        if (self.task_number_from_keypad == 5 or self.task_number_from_keypad == 6):
-            if (self.paramater_list[2] == 3):
+        if (self.task_number_from_keypad == 5):
+            if (self.paramater_list[2] != -1):
                 if (image_data3 == []):
                     capture_image_data(3)
                 send_image_data(3)
-            elif (self.paramater_list[1] == 2):
+            elif (self.paramater_list[1] != -1):
                 if (image_data2 == []):
                     capture_image_data(2)
                 send_image_data(2)
-            elif (self.paramater_list[0] == 1):
+            elif (self.paramater_list[0] != -1):
                 if (image_data1 == []):
                     capture_image_data(1)
+                send_image_data(1)
+        
+        if (self.task_number_from_keypad == 6):
+            if (self.paramater_list[2] != -1):
+                send_image_data(3)
+            elif (self.paramater_list[1] != -1):
+                send_image_data(2)
+            elif (self.paramater_list[0] != -1):
                 send_image_data(1)
 
         # send keypad value to remote
