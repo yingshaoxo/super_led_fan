@@ -720,7 +720,7 @@ void task1(row_1, row_2) {
 void task2() {
     int i;
     for (i = 1; i < 17; i++) {
-        task1(i + 1, 16 - i);
+        task1(i, 17 - i);
         millisecond_of_delay(1000);
     }
 }

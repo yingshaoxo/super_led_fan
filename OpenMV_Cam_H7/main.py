@@ -45,6 +45,7 @@ sub_image_number_in_one_axis = 16
 black_color_representation = 10
 white_color_representation = 9
 
+AREA_THRESHOLD = 25
 PIXELS_THRESHOLD = 25
 L_MIN = 49
 
@@ -102,11 +103,11 @@ def detect_all_sub_image(an_image):
         for xi in range(sub_image_number_in_one_axis):
             crop_paramater = sub_image_crop_paramater_list[yi][xi]
             sub_image = an_image.copy(roi=crop_paramater)
-            blobs = sub_image.find_blobs([(L_MIN, 100, -128, 127, -128, 127)], x_stride=1, y_stride=1, area_threshold=25, pixels_threshold=PIXELS_THRESHOLD)
+            blobs = sub_image.find_blobs([(L_MIN, 100, -128, 127, -128, 127)], x_stride=1, y_stride=1, area_threshold=AREA_THRESHOLD, pixels_threshold=PIXELS_THRESHOLD)
             # blobs = sub_image.find_blobs([(185, 255)])  # 156,255
             true_or_false = white_color_representation
             for blob in blobs:
-                if blob.pixels() > 15:
+                if blob.pixels() > 1:
                     true_or_false = black_color_representation
             detected_point_list.append(true_or_false)
 
@@ -472,6 +473,7 @@ class Keypad():
             self.set_column4_to_0()
 
     def handle_keypad_number(self, number):
+        global AREA_THRESHOLD
         global PIXELS_THRESHOLD
         global L_MIN
         """
@@ -486,7 +488,7 @@ class Keypad():
         Cancel: 13
         Enter: 14
         """
-        led.on()
+        #led.on()
 
         if (number != 10): # resend
             if (number < 10):
@@ -553,15 +555,15 @@ class Keypad():
                 send_image_data(0)
             if (number == 7 or number == 9):
                 if (number == 7): # decrese a camera value
-                    PIXELS_THRESHOLD = PIXELS_THRESHOLD - 5
+                    PIXELS_THRESHOLD = PIXELS_THRESHOLD - 1
                 elif (number == 9): # increase a camera value
-                    PIXELS_THRESHOLD = PIXELS_THRESHOLD + 5
+                    PIXELS_THRESHOLD = PIXELS_THRESHOLD + 1
                 return
             if (number == 4 or number == 6):
                 if (number == 4):
-                    L_MIN = L_MIN + 5
+                    AREA_THRESHOLD = AREA_THRESHOLD + 1
                 elif (number == 6):
-                    L_MIN = L_MIN - 5
+                    AREA_THRESHOLD = AREA_THRESHOLD - 1
                 return
             if (number == 1 or number == 3):
                 if (number == 1):
@@ -574,7 +576,7 @@ class Keypad():
         send_signal(11, data=[number, self.state])
 
         sleep_ms(150)
-        led.off()
+        #led.off()
 
         self.state += 1
         if self.state > 255:
