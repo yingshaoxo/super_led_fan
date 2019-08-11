@@ -9,9 +9,6 @@ from pyb import LED
 from utime import sleep_ms
 
 
-DEBUG = 1
-
-
 sensor.reset()
 # sensor.set_pixformat(sensor.GRAYSCALE)  # RGB565
 sensor.set_pixformat(sensor.RGB565)
@@ -48,6 +45,8 @@ sub_image_number_in_one_axis = 16
 black_color_representation = 10
 white_color_representation = 9
 
+PIXELS_THRESHOLD = 25
+L_MIN = 49
 
 def get_sub_image_paramaters():
     list_for_y_axis = []
@@ -103,7 +102,7 @@ def detect_all_sub_image(an_image):
         for xi in range(sub_image_number_in_one_axis):
             crop_paramater = sub_image_crop_paramater_list[yi][xi]
             sub_image = an_image.copy(roi=crop_paramater)
-            blobs = sub_image.find_blobs([(49, 100, -128, 127, -128, 127)], x_stride=1, y_stride=1, area_threshold=25, pixels_threshold=25)
+            blobs = sub_image.find_blobs([(L_MIN, 100, -128, 127, -128, 127)], x_stride=1, y_stride=1, area_threshold=25, pixels_threshold=PIXELS_THRESHOLD)
             # blobs = sub_image.find_blobs([(185, 255)])  # 156,255
             true_or_false = white_color_representation
             for blob in blobs:
@@ -216,6 +215,7 @@ def send_signal(task_number, data=None, picture_index=1):
     send_int(picture_index) # send 257
 
 
+image_data = []
 image_data1 = []
 image_data2 = []
 image_data3 = []
@@ -224,6 +224,7 @@ def capture_image_data(index_of_image):
     global image_data1
     global image_data2
     global image_data3
+    global image_data
     img = sensor.snapshot().lens_corr(1.8)
     detect_all_sub_image(img)
     if (index_of_image == 1):
@@ -232,17 +233,23 @@ def capture_image_data(index_of_image):
         image_data2 = detected_point_list
     elif (index_of_image == 3):
         image_data3 = detected_point_list
+    elif (index_of_image == 0):
+        image_data = detected_point_list
 
 def send_image_data(index_of_image):
     global image_data1
     global image_data2
     global image_data3
+    global image_data
     if (index_of_image == 1):
         send_signal(8, data=image_data1)
     elif (index_of_image == 2):
         send_signal(8, data=image_data2)
     elif (index_of_image == 3):
         send_signal(8, data=image_data3)
+    elif (index_of_image == 0):
+        send_signal(8, data=image_data)
+
 
 ####################################
 ####################################
@@ -465,6 +472,8 @@ class Keypad():
             self.set_column4_to_0()
 
     def handle_keypad_number(self, number):
+        global PIXELS_THRESHOLD
+        global L_MIN
         """
         1	2	3	Return(or back)
         4	5	6	Menu
@@ -538,6 +547,29 @@ class Keypad():
             elif (self.paramater_list[0] != -1):
                 send_image_data(1)
 
+        if (self.task_number_from_keypad == 8): # change threshold
+            if (number == 14 or number == 10):
+                capture_image_data(0) # capture new image
+                send_image_data(0)
+            if (number == 7 or number == 9):
+                if (number == 7): # decrese a camera value
+                    PIXELS_THRESHOLD = PIXELS_THRESHOLD - 5
+                elif (number == 9): # increase a camera value
+                    PIXELS_THRESHOLD = PIXELS_THRESHOLD + 5
+                return
+            if (number == 4 or number == 6):
+                if (number == 4):
+                    L_MIN = L_MIN + 5
+                elif (number == 6):
+                    L_MIN = L_MIN - 5
+                return
+            if (number == 1 or number == 3):
+                if (number == 1):
+                    L_MIN = L_MIN + 1
+                elif (number == 3):
+                    L_MIN = L_MIN - 1
+                return
+
         # send keypad value to remote
         send_signal(11, data=[number, self.state])
 
@@ -556,11 +588,9 @@ while(True):
 
     keypad.catch_keypad_input()
 
-    if DEBUG == 1:
-        img = sensor.snapshot().lens_corr(2)
-        #detect_all_sub_image(img)
-        #img = print_out_detected_points(img)
-
+    img = sensor.snapshot().lens_corr(2)
+    #detect_all_sub_image(img)
+    #img = print_out_detected_points(img)
 
     #print("FPS %f" % clock.fps())
     gc.mem_free()

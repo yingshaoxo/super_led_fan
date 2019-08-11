@@ -348,265 +348,7 @@ unsigned int TASK_NUMBER = 0;
 unsigned int data_arraving = 0;
 unsigned int data_index = 0;
 
-//unsigned char an_image[257];
-unsigned char an_image[256] = {
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-    1,
-};
+unsigned char an_image[257];
 unsigned int image_index = 0;
 unsigned int an_image_received = 0;
 
@@ -858,19 +600,115 @@ void initialize_16_rows_LED() {
 
 void task1(row_1, row_2) {
     // the number is between 1 and 16
-    //turn_off_all_leds();
+    unsigned char row_num1 = 0;
+    unsigned char row_num2 = 0;
 
-    if ((row_1 < 9) && (row_2 < 9)) {
-        set_first_8_red_leds(int_to_led_hex(row_1) | int_to_led_hex(row_2));
-    } else if ((row_1 > 8) && (row_2 > 8)) {
-        set_second_8_red_leds(int_to_led_hex(row_1) | int_to_led_hex(row_2));
-    } else if ((row_1 < 9) && (row_2 > 8)) {
-        set_first_8_red_leds(int_to_led_hex(row_1));
-        set_second_8_red_leds(int_to_led_hex(row_2));
-    } else if ((row_1 > 8) && (row_2 < 9)) {
-        set_second_8_red_leds(int_to_led_hex(row_1));
-        set_first_8_red_leds(int_to_led_hex(row_2));
+    switch (row_1) {
+    case 1:
+        row_num1 |= 0x80;
+        break;
+    case 2:
+        row_num1 |= 0x40;
+        break;
+    case 3:
+        row_num1 |= 0x20;
+        break;
+    case 4:
+        row_num1 |= 0x10;
+        break;
+    case 5:
+        row_num1 |= 0x08;
+        break;
+    case 6:
+        row_num1 |= 0x04;
+        break;
+    case 7:
+        row_num1 |= 0x02;
+        break;
+    case 8:
+        row_num1 |= 0x01;
+        break;
+    case 9:
+        row_num2 |= 0x80;
+        break;
+    case 10:
+        row_num2 |= 0x40;
+        break;
+    case 11:
+        row_num2 |= 0x20;
+        break;
+    case 12:
+        row_num2 |= 0x10;
+        break;
+    case 13:
+        row_num2 |= 0x08;
+        break;
+    case 14:
+        row_num2 |= 0x04;
+        break;
+    case 15:
+        row_num2 |= 0x02;
+        break;
+    case 16:
+        row_num2 |= 0x01;
+        break;
+    default:
     }
+
+    switch (row_2) {
+    case 1:
+        row_num1 |= 0x80;
+        break;
+    case 2:
+        row_num1 |= 0x40;
+        break;
+    case 3:
+        row_num1 |= 0x20;
+        break;
+    case 4:
+        row_num1 |= 0x10;
+        break;
+    case 5:
+        row_num1 |= 0x08;
+        break;
+    case 6:
+        row_num1 |= 0x04;
+        break;
+    case 7:
+        row_num1 |= 0x02;
+        break;
+    case 8:
+        row_num1 |= 0x01;
+        break;
+    case 9:
+        row_num2 |= 0x80;
+        break;
+    case 10:
+        row_num2 |= 0x40;
+        break;
+    case 11:
+        row_num2 |= 0x20;
+        break;
+    case 12:
+        row_num2 |= 0x10;
+        break;
+    case 13:
+        row_num2 |= 0x08;
+        break;
+    case 14:
+        row_num2 |= 0x04;
+        break;
+    case 15:
+        row_num2 |= 0x02;
+        break;
+    case 16:
+        row_num2 |= 0x01;
+        break;
+    default:
+    }
+
+    set_first_8_red_leds(row_num1);
+    set_second_8_red_leds(row_num2);
 }
 
 // ****************
@@ -1413,25 +1251,7 @@ void task7() {
 
 // ****************
 
-void special_gift() {
-    unsigned char special_point_square = {
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-    };
+void show_camera() {
 }
 
 // ***************
@@ -1631,6 +1451,14 @@ void handle_keypad_key(int number) {
             }
         }
     }
+
+    if (task_number_from_keypad == 8) {
+        if (an_image_received == 1) {
+            clean_LCD_menu();
+            draw_picture_from_serial();
+            an_image_received = 0;
+        }
+    }
 }
 
 #pragma vector = USART0RX_VECTOR
@@ -1731,7 +1559,7 @@ int main(void) {
                 task7();
                 break;
             case 8:
-                special_gift();
+                show_camera();
                 break;
             default:
                 break;
